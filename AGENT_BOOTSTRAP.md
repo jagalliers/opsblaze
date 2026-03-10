@@ -362,3 +362,53 @@ The pipeline logic lives in `server/pipeline.ts` as a pure function (`processMes
 4. Verify one tool call emits a `chart` event.
 5. Verify footer shows "OpsBlaze" (idle) or fire-animated "OpsBlaze" (streaming).
 6. Verify login-specific prompt behavior via the skill (does it stay scoped to `action=login_attempt`?).
+
+## 12) GitHub & Release Workflow
+
+The project is hosted at https://github.com/jagalliers/opsblaze. CI runs automatically on every push to `main` and on every pull request.
+
+### Pushing Changes
+
+After committing locally, push to the remote:
+
+```
+git push
+```
+
+This triggers the CI pipeline (GitHub Actions), which runs typecheck, lint, tests (with coverage), and build across Node 20, 22, and 24.
+
+### Branch Workflow
+
+For solo development, pushing directly to `main` is fine. When collaborating or making larger changes, use feature branches:
+
+```
+git checkout -b feature/my-change
+# ... make changes, commit ...
+git push -u origin feature/my-change
+# Open a PR on GitHub — CI runs automatically on the PR
+# Merge into main once CI passes
+```
+
+### Cutting a New Release
+
+1. Update `CHANGELOG.md` with the new version's changes under a new `## [x.y.z] - YYYY-MM-DD` heading and add a link reference at the bottom.
+2. Bump the version in `package.json`.
+3. Commit, push, and wait for CI to pass.
+4. Tag and publish:
+
+```
+git tag vX.Y.Z
+git push origin vX.Y.Z
+gh release create vX.Y.Z --title "vX.Y.Z" --notes-file CHANGELOG.md
+```
+
+### CI Pipeline
+
+Defined in `.github/workflows/ci.yml`. Runs on `ubuntu-latest` with a matrix of Node 20, 22, and 24:
+
+1. `npm ci`
+2. `npm audit --audit-level=high`
+3. `npm run typecheck`
+4. `npm run lint`
+5. `npm run test:coverage`
+6. `npm run build`
