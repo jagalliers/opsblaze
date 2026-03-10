@@ -1,0 +1,46 @@
+---
+description: Process management SOP — how to start, stop, restart, and check the app server
+alwaysApply: true
+---
+
+# Process Management
+
+All server lifecycle operations MUST go through the service controller:
+
+```
+node bin/opsblaze.cjs <command>
+```
+
+## Allowed commands
+
+| Action | Command |
+|--------|---------|
+| Start (prod) | `node bin/opsblaze.cjs start` |
+| Start (dev) | `node bin/opsblaze.cjs dev` |
+| Stop | `node bin/opsblaze.cjs stop` |
+| Restart | `node bin/opsblaze.cjs restart` |
+| Check status | `node bin/opsblaze.cjs status` |
+| View logs | `node bin/opsblaze.cjs logs` |
+
+## NEVER do any of these
+
+- `node server/index.ts` or `tsx server/index.ts` — bypasses state tracking, creates orphans
+- `npm run dev` or `npm start` — same problem; use `opsblaze dev` / `opsblaze start` instead
+- `kill`, `killall`, `pkill` on server processes — use `opsblaze stop` which handles the full process tree and cleans up state
+- Manually spawning `node dist/server/index.js` — this is what the supervisor does internally
+
+## Dev mode notes
+
+- `opsblaze dev` runs `concurrently` with `tsx watch` + `vite`; file changes auto-restart the server
+- Do NOT manually restart after editing server files — `tsx watch` handles it
+- If the server appears stuck, check with `opsblaze status` first, then `opsblaze stop && opsblaze dev`
+
+## Port conflicts
+
+If you see "Port 3000 is already in use", always resolve with:
+
+```
+node bin/opsblaze.cjs stop
+```
+
+Then start again. The stop command sweeps both tracked processes and any orphans on the port.

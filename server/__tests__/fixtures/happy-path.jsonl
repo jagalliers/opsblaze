@@ -1,0 +1,11 @@
+{"type":"stream_event","event":{"type":"content_block_start","content_block":{"type":"text"}}}
+{"type":"stream_event","event":{"type":"content_block_delta","delta":{"type":"text_delta","text":"Let me search for login activity."}}}
+{"type":"stream_event","event":{"type":"content_block_stop"}}
+{"type":"stream_event","event":{"type":"content_block_start","content_block":{"type":"tool_use","name":"splunk_query"}}}
+{"type":"stream_event","event":{"type":"content_block_delta","delta":{"type":"input_json_delta","partial_json":"{\"spl\":\"index=main\"}"}}}
+{"type":"stream_event","event":{"type":"content_block_stop"}}
+{"type":"user","message":{"content":[{"type":"tool_result","content":[{"type":"text","text":"{\"summary\":\"Found 100 events across 3 sourcetypes.\",\"chart\":{\"vizType\":\"bar\",\"dataSources\":{\"primary\":{\"data\":{\"columns\":[[\"syslog\",\"access_combined\"],[50,30]]}}},\"width\":800,\"height\":400},\"suppressed\":false}"}]}]}}
+{"type":"stream_event","event":{"type":"content_block_start","content_block":{"type":"text"}}}
+{"type":"stream_event","event":{"type":"content_block_delta","delta":{"type":"text_delta","text":"## Results\n\nThe data shows 100 events."}}}
+{"type":"stream_event","event":{"type":"content_block_stop"}}
+{"type":"result","subtype":"end_turn"}
