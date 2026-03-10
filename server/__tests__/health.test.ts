@@ -47,12 +47,17 @@ describe("checkSplunk", () => {
 
   it("returns ok for 2xx status codes", async () => {
     const result = await checkSplunk({ ...splunkBase, _requester: fakeRequester(200) });
-    expect(result).toEqual({ status: "ok" });
+    expect(result).toEqual({ status: "ok", message: "basic" });
   });
 
   it("returns ok for 204", async () => {
     const result = await checkSplunk({ ...splunkBase, _requester: fakeRequester(204) });
-    expect(result).toEqual({ status: "ok" });
+    expect(result).toEqual({ status: "ok", message: "basic" });
+  });
+
+  it("returns ok with 'token' message when token auth is used", async () => {
+    const result = await checkSplunk({ ...splunkBase, token: "t", _requester: fakeRequester(200) });
+    expect(result).toEqual({ status: "ok", message: "token" });
   });
 
   it("returns degraded with 'auth failed' for 401", async () => {

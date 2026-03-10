@@ -46,6 +46,7 @@ export function checkSplunk(opts: {
 
   const requester = opts._requester ?? (opts.scheme === "https" ? https : http).request;
   const auth = splunkAuthHeader(opts);
+  const authLabel = opts.token ? "token" : "basic";
 
   return new Promise((resolve) => {
     try {
@@ -63,7 +64,7 @@ export function checkSplunk(opts: {
           resp.resume();
           const code = resp.statusCode ?? 0;
           if (code >= 200 && code < 300) {
-            resolve({ status: "ok" });
+            resolve({ status: "ok", message: authLabel });
           } else if (code === 401 || code === 403) {
             resolve({ status: "degraded", message: "auth failed" });
           } else if (code >= 500) {
