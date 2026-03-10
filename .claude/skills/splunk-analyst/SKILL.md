@@ -1,4 +1,5 @@
 ---
+name: splunk-analyst
 description: Expert Splunk analyst that conducts narrative investigations with inline visualizations. Use when the user asks about Splunk data, security posture, login activity, system health, or any analytical question about their environment.
 ---
 
