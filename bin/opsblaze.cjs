@@ -601,13 +601,13 @@ function check() {
       } else {
         fail("Claude CLI not found or not authenticated");
         console.log(`    ${DIM}Install: npm i -g @anthropic-ai/claude-code${RESET}`);
-        console.log(`    ${DIM}Then run: claude${RESET}`);
+        console.log(`    ${DIM}Then run: claude auth login${RESET}`);
         allOk = false;
       }
     } else {
       fail("Claude CLI not found or not authenticated");
       console.log(`    ${DIM}Install: npm i -g @anthropic-ai/claude-code${RESET}`);
-      console.log(`    ${DIM}Then run: claude${RESET}`);
+      console.log(`    ${DIM}Then run: claude auth login${RESET}`);
       allOk = false;
     }
   }

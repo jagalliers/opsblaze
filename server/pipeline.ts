@@ -2,6 +2,39 @@ import type { Logger } from "pino";
 import { chartHasData, processTextBuffer } from "./sse-helpers.js";
 import type { FlushTextState } from "./sse-helpers.js";
 
+const AUTH_PATTERNS = [
+  /unauthorized/i,
+  /authentication/i,
+  /not.?logged.?in/i,
+  /invalid.*token/i,
+  /oauth/i,
+  /credentials/i,
+  /401/,
+];
+
+const RATE_LIMIT_PATTERNS = [/rate.?limit/i, /too many requests/i, /429/];
+
+export function classifyAgentError(err: unknown): string {
+  const msg =
+    err instanceof Error
+      ? `${err.message} ${(err as Error & { stderr?: string }).stderr ?? ""}`
+      : String(err);
+
+  if (AUTH_PATTERNS.some((p) => p.test(msg))) {
+    return "Claude authentication failed. If using Claude CLI OAuth, run 'claude auth login' to re-authenticate.";
+  }
+  if (RATE_LIMIT_PATTERNS.some((p) => p.test(msg))) {
+    return "Claude rate limit reached. Please wait a moment and try again.";
+  }
+  if (/ECONNREFUSED|ENOTFOUND|unreachable|network/i.test(msg)) {
+    return "Could not reach the Claude API. Check your network connection and try again.";
+  }
+  if (/timeout|ETIMEDOUT/i.test(msg)) {
+    return "The request to Claude timed out. Please try again.";
+  }
+  return "An error occurred during the investigation.";
+}
+
 interface SplunkToolResult {
   summary: string;
   chart: {
@@ -212,7 +245,7 @@ export async function processMessageStream(
   } catch (err) {
     if (!abortSignal?.aborted) {
       emitter.log.error({ err }, "agent error");
-      emitter.emit("error", { message: "An error occurred during the investigation" });
+      emitter.emit("error", { message: classifyAgentError(err) });
     }
   }
 

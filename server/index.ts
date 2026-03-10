@@ -13,6 +13,7 @@ import rateLimit from "express-rate-limit";
 import { logger } from "./logger.js";
 import { validateEnv } from "./env.js";
 import { runAgent } from "./agent.js";
+import { classifyAgentError } from "./pipeline.js";
 import {
   listConversations,
   getConversation,
@@ -235,9 +236,8 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
   } catch (err) {
     if (!abortController.signal.aborted && !res.writableEnded && !res.destroyed) {
       reqLog.error({ err }, "chat error");
-      res.write(
-        `event: error\ndata: ${JSON.stringify({ message: "An error occurred during the investigation" })}\n\n`
-      );
+      const userMessage = classifyAgentError(err);
+      res.write(`event: error\ndata: ${JSON.stringify({ message: userMessage })}\n\n`);
       res.write(`event: done\ndata: {}\n\n`);
     }
   } finally {
@@ -768,14 +768,28 @@ function validateStartup(): boolean {
     logger.info("Claude auth: API key");
   } else {
     try {
-      execFileSync("claude", ["--version"], {
-        timeout: 5000,
-        stdio: "pipe",
-      });
-      logger.info("Claude auth: CLI OAuth");
+      const authOutput = execFileSync("claude", ["auth", "status", "--json"], {
+        encoding: "utf-8",
+        timeout: 10000,
+        stdio: ["pipe", "pipe", "pipe"],
+      }).trim();
+      try {
+        const authStatus = JSON.parse(authOutput);
+        if (authStatus.loggedIn) {
+          logger.info("Claude auth: CLI OAuth");
+        } else {
+          logger.error(
+            "Claude CLI is installed but not logged in. Run 'claude auth login' to authenticate."
+          );
+          ok = false;
+        }
+      } catch {
+        logger.error("Claude CLI returned unexpected output from 'claude auth status --json'");
+        ok = false;
+      }
     } catch {
       logger.error(
-        "Claude CLI not found or not authenticated. Install with 'npm i -g @anthropic-ai/claude-code' then run 'claude' to authenticate"
+        "Claude CLI not found. Install with 'npm i -g @anthropic-ai/claude-code' then run 'claude auth login' to authenticate."
       );
       ok = false;
     }

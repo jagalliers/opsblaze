@@ -162,7 +162,7 @@ All env vars are documented in `.env.example`. The full set with defaults:
 
 **Default**: Uses Claude CLI OAuth (Claude Pro/Max subscription).
 1. Install Claude Code CLI: `npm install -g @anthropic-ai/claude-code`
-2. Run `claude` in a terminal and complete the OAuth flow
+2. Run `claude auth login` in a terminal and complete the OAuth flow
 3. Credentials are stored in `~/.claude/` and used automatically by the Agent SDK
 
 **Alternative**: Set `ANTHROPIC_API_KEY` in `.env` for API key auth (pay-per-use billing).

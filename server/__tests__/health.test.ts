@@ -180,10 +180,10 @@ describe("checkClaude", () => {
     expect(result).toEqual({ status: "error", message: "unreachable" });
   });
 
-  it("returns ok with 'OAuth' when CLI succeeds and no API key", async () => {
+  it("returns ok with 'OAuth' when CLI reports loggedIn true", async () => {
     const mockExec = (() =>
       Promise.resolve({
-        stdout: "1.0.0",
+        stdout: JSON.stringify({ loggedIn: true, email: "user@example.com" }),
         stderr: "",
       })) as unknown as typeof import("../health.js").checkClaude extends (opts: infer O) => unknown
       ? NonNullable<(O & { _execFile?: unknown })["_execFile"]>
@@ -192,11 +192,47 @@ describe("checkClaude", () => {
     expect(result).toEqual({ status: "ok", message: "OAuth" });
   });
 
-  it("returns error with 'CLI not found' when CLI fails and no API key", async () => {
+  it("returns error with 'not logged in' when CLI reports loggedIn false", async () => {
+    const mockExec = (() =>
+      Promise.resolve({
+        stdout: JSON.stringify({ loggedIn: false }),
+        stderr: "",
+      })) as unknown as typeof import("../health.js").checkClaude extends (opts: infer O) => unknown
+      ? NonNullable<(O & { _execFile?: unknown })["_execFile"]>
+      : never;
+    const result = await checkClaude({ apiKey: undefined, _execFile: mockExec });
+    expect(result).toEqual({ status: "error", message: "not logged in" });
+  });
+
+  it("returns error with 'CLI not found' when CLI command fails", async () => {
     const mockExec = (() =>
       Promise.reject(
         new Error("ENOENT")
       )) as unknown as typeof import("../health.js").checkClaude extends (opts: infer O) => unknown
+      ? NonNullable<(O & { _execFile?: unknown })["_execFile"]>
+      : never;
+    const result = await checkClaude({ apiKey: undefined, _execFile: mockExec });
+    expect(result).toEqual({ status: "error", message: "CLI not found" });
+  });
+
+  it("returns error with 'unexpected CLI response' for malformed JSON", async () => {
+    const mockExec = (() =>
+      Promise.resolve({
+        stdout: "not valid json",
+        stderr: "",
+      })) as unknown as typeof import("../health.js").checkClaude extends (opts: infer O) => unknown
+      ? NonNullable<(O & { _execFile?: unknown })["_execFile"]>
+      : never;
+    const result = await checkClaude({ apiKey: undefined, _execFile: mockExec });
+    expect(result).toEqual({ status: "error", message: "unexpected CLI response" });
+  });
+
+  it("returns error with 'CLI not found' on timeout", async () => {
+    const mockExec = (() => {
+      const err = new Error("Command timed out");
+      (err as NodeJS.ErrnoException).code = "ETIMEDOUT";
+      return Promise.reject(err);
+    }) as unknown as typeof import("../health.js").checkClaude extends (opts: infer O) => unknown
       ? NonNullable<(O & { _execFile?: unknown })["_execFile"]>
       : never;
     const result = await checkClaude({ apiKey: undefined, _execFile: mockExec });

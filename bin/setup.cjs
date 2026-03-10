@@ -132,9 +132,29 @@ function checkClaude() {
     } catch {
       fail("Claude CLI not found");
       info("Install: npm install -g @anthropic-ai/claude-code");
-      info("Then run: claude    (to complete OAuth authentication)");
+      info("Then run: claude auth login    (to complete OAuth authentication)");
       return false;
     }
+  }
+}
+
+function checkClaudeAuth() {
+  try {
+    const raw = execFileSync("claude", ["auth", "status", "--json"], {
+      encoding: "utf-8",
+      timeout: 10000,
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    const status = JSON.parse(raw);
+    if (status.loggedIn) {
+      ok(`Authenticated as ${status.email || "unknown user"}`);
+      return true;
+    }
+    fail("Claude CLI is installed but not logged in");
+    return false;
+  } catch {
+    fail("Could not verify Claude authentication status");
+    return false;
   }
 }
 
@@ -350,6 +370,41 @@ async function main() {
         );
         rl.close();
         process.exit(0);
+      }
+    } else {
+      let authenticated = checkClaudeAuth();
+      if (!authenticated) {
+        info("Run: claude auth login");
+        const doLogin = await askYesNo(
+          "Would you like to run 'claude auth login' now?",
+          true
+        );
+        if (doLogin) {
+          console.log("");
+          info("Opening Claude authentication (this will open a browser window)...");
+          console.log("");
+          const loginResult = spawnSync("claude", ["auth", "login"], {
+            stdio: "inherit",
+            timeout: 120000,
+          });
+          if (loginResult.status === 0) {
+            authenticated = checkClaudeAuth();
+            if (!authenticated) {
+              warn("Authentication may not have completed successfully");
+            }
+          } else {
+            warn("Login command exited with an error");
+          }
+        }
+        if (!authenticated) {
+          warn("Claude is not authenticated \u2014 the app will not work until you run: claude auth login");
+          const proceed = await askYesNo("Continue setup anyway?", true);
+          if (!proceed) {
+            console.log(`\nSetup paused. Run 'claude auth login' then re-run setup.\n`);
+            rl.close();
+            process.exit(0);
+          }
+        }
       }
     }
   } else {

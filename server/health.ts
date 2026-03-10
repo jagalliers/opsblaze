@@ -138,8 +138,17 @@ export async function checkClaude(opts: {
 
   const run = opts._execFile ?? execFile;
   try {
-    await run("claude", ["--version"], { timeout: 3000 });
-    return { status: "ok", message: "OAuth" };
+    const { stdout } = await run("claude", ["auth", "status", "--json"], { timeout: 10000 });
+    const raw = String(stdout ?? "");
+    try {
+      const status = JSON.parse(raw.trim());
+      if (status.loggedIn) {
+        return { status: "ok", message: "OAuth" };
+      }
+      return { status: "error", message: "not logged in" };
+    } catch {
+      return { status: "error", message: "unexpected CLI response" };
+    }
   } catch {
     return { status: "error", message: "CLI not found" };
   }

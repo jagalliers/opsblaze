@@ -20,7 +20,7 @@ Powered by Claude (via the Claude Agent SDK). Connects to Splunk via its REST AP
 | Requirement | How to get it |
 |---|---|
 | Node.js 20+ | [nodejs.org](https://nodejs.org) |
-| Claude auth | Claude CLI (`npm install -g @anthropic-ai/claude-code` then run `claude`) **or** an [Anthropic API key](https://console.anthropic.com/) |
+| Claude auth | Claude CLI (`npm install -g @anthropic-ai/claude-code` then run `claude auth login`) **or** an [Anthropic API key](https://console.anthropic.com/) |
 | Splunk access | Management port (default 8089) |
 
 The Claude CLI uses OAuth with a Claude Pro/Max subscription. Alternatively, set `ANTHROPIC_API_KEY` in `.env` for pay-per-use API billing.
