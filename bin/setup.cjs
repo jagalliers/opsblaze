@@ -312,21 +312,6 @@ async function main() {
     process.exit(1);
   }
 
-  const claudeOk = checkClaude();
-  if (!claudeOk) {
-    const proceed = await askYesNo(
-      "Continue without Claude CLI? (app won't work until it's set up)",
-      false
-    );
-    if (!proceed) {
-      console.log(
-        `\nSetup paused. Install and authenticate Claude CLI, then re-run setup.\n`
-      );
-      rl.close();
-      process.exit(0);
-    }
-  }
-
   // --- Existing .env check ---
   if (fs.existsSync(ENV_FILE)) {
     warn(".env file already exists");
@@ -342,35 +327,63 @@ async function main() {
     }
   }
 
+  // --- Claude Authentication ---
+  heading("2. Claude authentication");
+
+  const claudeAuthMethod = await askChoice("How would you like to authenticate with Claude?", [
+    { label: "Claude CLI OAuth (Claude Pro/Max subscription)", value: "cli" },
+    { label: "Anthropic API key (pay-per-use billing)", value: "apikey" },
+  ]);
+
+  let anthropicKey = "";
+
+  if (claudeAuthMethod === "cli") {
+    const claudeOk = checkClaude();
+    if (!claudeOk) {
+      const proceed = await askYesNo(
+        "Continue anyway? (you can install Claude CLI later before starting the app)",
+        false
+      );
+      if (!proceed) {
+        console.log(
+          `\nSetup paused. Install and authenticate Claude CLI, then re-run setup.\n`
+        );
+        rl.close();
+        process.exit(0);
+      }
+    }
+  } else {
+    anthropicKey = await ask("Anthropic API key");
+    if (!anthropicKey) {
+      fail("API key cannot be empty");
+      rl.close();
+      process.exit(1);
+    }
+    ok("API key configured");
+  }
+
   // --- Splunk Connection ---
-  heading("2. Splunk connection");
+  heading("3. Splunk connection");
 
   const splunk = await collectSplunkConfig();
 
   // --- App settings ---
-  heading("3. App settings");
+  heading("4. App settings");
 
   const port = await ask("Server port", "3000");
   validatePort(port, "Server port");
 
   // --- Advanced settings ---
-  heading("4. Advanced settings (optional)");
+  heading("5. Advanced settings (optional)");
 
   info("Press Enter to accept defaults and skip any of these.");
   console.log("");
-
-  let anthropicKey = "";
-  if (!claudeOk) {
-    anthropicKey = await ask("Anthropic API key (required without Claude CLI)");
-  } else {
-    anthropicKey = await ask("Anthropic API key (leave blank to use Claude CLI OAuth)");
-  }
 
   const host = await ask("Bind address (use 0.0.0.0 for remote access)", "127.0.0.1");
   const claudeModel = await ask("Claude model", "claude-opus-4-6");
 
   // --- Write .env ---
-  heading("5. Writing configuration");
+  heading("6. Writing configuration");
 
   const envLines = [
     "# Splunk connection",
@@ -417,7 +430,7 @@ async function main() {
 }
 
 async function installAndBuild() {
-  heading("6. Installing dependencies");
+  heading("7. Installing dependencies");
 
   const installResult = spawnSync("npm", ["install", "--legacy-peer-deps"], {
     cwd: ROOT,
@@ -433,7 +446,7 @@ async function installAndBuild() {
   ok("Dependencies installed");
 
   // Optional Splunk visualizations
-  heading("6b. Enhanced Visualizations (optional)");
+  heading("7b. Enhanced Visualizations (optional)");
 
   console.log(`  ${DIM}OpsBlaze includes Chart.js charts by default.${RESET}`);
   console.log(`  ${DIM}If you have access to the @splunk/visualizations npm packages,${RESET}`);
@@ -488,7 +501,7 @@ async function installAndBuild() {
     info("Run: node bin/opsblaze.cjs install-splunk-viz");
   }
 
-  heading("7. Building application");
+  heading("8. Building application");
 
   const buildResult = spawnSync("npm", ["run", "build"], {
     cwd: ROOT,
