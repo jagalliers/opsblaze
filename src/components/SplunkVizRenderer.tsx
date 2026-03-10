@@ -3,6 +3,25 @@ import React, { Suspense, lazy } from "react";
 import SplunkThemeProvider from "@splunk/themes/SplunkThemeProvider";
 import type { VizType, SplunkDataSources } from "../types";
 
+if (typeof window !== "undefined" && typeof window.locale_name !== "function") {
+  const identity = (s: string) => s;
+  const numFmt = (n: number) => String(n);
+  window.locale_name = () => "en_US";
+  window.locale_uses_day_before_month = () => false;
+  window.format_decimal = numFmt;
+  window.format_number = numFmt;
+  window.format_percent = numFmt;
+  window.format_scientific = numFmt;
+  window.format_date = identity;
+  window.format_datetime = identity;
+  window.format_time = identity;
+  window.format_datetime_microseconds = identity;
+  window.format_time_microseconds = identity;
+  window.format_datetime_range = (_a: any, _b: any) => "";
+  window.gettext = identity;
+  window.ungettext = (_s: string, p: string, _n: number) => p;
+}
+
 function lazyWithRetry(
   factory: () => Promise<{ default: React.ComponentType<any> }>
 ): React.LazyExoticComponent<React.ComponentType<any>> {
