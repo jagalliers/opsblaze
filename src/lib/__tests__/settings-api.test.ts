@@ -46,6 +46,7 @@ describe("getSettings", () => {
         serverPort: 3000,
         bindAddress: "127.0.0.1",
         claudeAuthMethod: "cli",
+        serverMode: "dev",
       },
     };
     const fn = mockFetch(200, settings);

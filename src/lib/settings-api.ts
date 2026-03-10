@@ -14,6 +14,7 @@ export interface AppSettings {
     serverPort: number;
     bindAddress: string;
     claudeAuthMethod: string;
+    serverMode: string;
   };
 }
 

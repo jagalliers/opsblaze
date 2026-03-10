@@ -286,17 +286,14 @@ function GeneralTab() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-300">Claude</p>
-              {claudeCheck?.message && (
-                <p className="text-[11px] text-gray-500">{claudeCheck.message}</p>
-              )}
             </div>
-            {settings && (
-              <span className="text-[10px] text-gray-600">{settings.system.claudeAuthMethod}</span>
-            )}
+            <span className="text-[10px] text-gray-600">
+              {claudeCheck?.message ?? settings?.system.claudeAuthMethod}
+            </span>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="block w-2 h-2 rounded-full shrink-0 bg-blue-400" />
+            <span className="block w-2 h-2 rounded-full shrink-0 bg-green-400" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-300">
                 Server{" "}
@@ -307,6 +304,9 @@ function GeneralTab() {
                 )}
               </p>
             </div>
+            {settings && (
+              <span className="text-[10px] text-gray-600">{settings.system.serverMode}</span>
+            )}
           </div>
         </div>
         <p className="text-[11px] text-gray-600 mt-2.5">

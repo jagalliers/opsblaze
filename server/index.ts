@@ -425,6 +425,7 @@ app.get("/api/settings", apiLimiter, async (_req, res) => {
         serverPort: PORT,
         bindAddress: HOST,
         claudeAuthMethod: process.env.ANTHROPIC_API_KEY ? "api-key" : "cli",
+        serverMode: process.env.NODE_ENV === "production" ? "prod" : "dev",
       },
     });
   } catch (err) {
