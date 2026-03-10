@@ -76,9 +76,6 @@ When discussing current file paths, use real paths. When discussing product iden
 ### Skills
 - `.claude/skills/` - auto-discovered skill directory; each subdirectory contains a `SKILL.md` (disabled skills use `.disabled` suffix)
 - `.claude/skills/splunk-analyst/SKILL.md` - core investigation prompt and domain knowledge
-- `.claude/skills/splunk-login-activity-investigation/SKILL.md` - login/auth activity investigation workflow
-- `.claude/skills/discovering-splunk-data-inventory/SKILL.md` - data inventory discovery workflow
-- `.claude/skills/splunk-data-inventory/SKILL.md.disabled` - data inventory skill (currently disabled)
 - Additional skills are user-created via the Skill Distillation feature and stored here
 
 ### Frontend
