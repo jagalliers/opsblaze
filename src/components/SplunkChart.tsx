@@ -5,14 +5,14 @@ declare const __SPLUNK_VIZ_AVAILABLE__: boolean;
 
 const ChartJSFallback = lazy(() => import("./ChartJSRenderer"));
 
-const Renderer =
+const SplunkVizRenderer =
   typeof __SPLUNK_VIZ_AVAILABLE__ !== "undefined" && __SPLUNK_VIZ_AVAILABLE__
     ? lazy(() =>
         import("./SplunkVizRenderer").catch(() => {
           return import("./ChartJSRenderer");
         })
       )
-    : ChartJSFallback;
+    : null;
 
 const SINGLEVALUE_MAX_HEIGHT = 160;
 
@@ -65,39 +65,44 @@ function ChartLoadingPlaceholder() {
   );
 }
 
-function ChartErrorFallback() {
-  return (
-    <div className="flex items-center justify-center text-gray-500 text-sm border border-gray-700 rounded-lg py-6">
-      Chart failed to load — try refreshing the page.
-    </div>
-  );
-}
-
-interface ErrorBoundaryProps {
-  fallback: React.ReactNode;
+interface ChartFallbackBoundaryProps {
+  vizType: VizType;
+  dataSources: SplunkDataSources;
+  width: number;
+  height: number;
   children: React.ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface ChartFallbackBoundaryState {
   hasError: boolean;
 }
 
-class ChartErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ChartFallbackBoundary extends Component<
+  ChartFallbackBoundaryProps,
+  ChartFallbackBoundaryState
+> {
+  constructor(props: ChartFallbackBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(): ErrorBoundaryState {
+  static getDerivedStateFromError(): ChartFallbackBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(_error: Error) {
-    // Errors are handled by the fallback UI
-  }
-
   render() {
-    if (this.state.hasError) return this.props.fallback;
+    if (this.state.hasError) {
+      return (
+        <Suspense fallback={<ChartLoadingPlaceholder />}>
+          <ChartJSFallback
+            vizType={this.props.vizType}
+            dataSources={this.props.dataSources}
+            width={this.props.width}
+            height={this.props.height}
+          />
+        </Suspense>
+      );
+    }
     return this.props.children;
   }
 }
@@ -123,10 +128,17 @@ export function SplunkChart(props: SplunkChartProps) {
       ? clampDimensions(props.vizType, props.width, props.height, containerWidth)
       : null;
 
+  const Renderer = SplunkVizRenderer ?? ChartJSFallback;
+
   return (
     <div ref={containerRef} className="w-full">
-      <ChartErrorBoundary fallback={<ChartErrorFallback />}>
-        {dims ? (
+      {dims ? (
+        <ChartFallbackBoundary
+          vizType={props.vizType}
+          dataSources={props.dataSources}
+          width={dims.width}
+          height={dims.height}
+        >
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <Renderer
               vizType={props.vizType}
@@ -135,10 +147,10 @@ export function SplunkChart(props: SplunkChartProps) {
               height={dims.height}
             />
           </Suspense>
-        ) : (
-          <ChartLoadingPlaceholder />
-        )}
-      </ChartErrorBoundary>
+        </ChartFallbackBoundary>
+      ) : (
+        <ChartLoadingPlaceholder />
+      )}
     </div>
   );
 }

@@ -37,9 +37,23 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: hasSplunk
+      ? [
+          "@splunk/charting-bundle",
+          "@splunk/visualizations",
+          "@splunk/visualization-context",
+          "@splunk/visualization-themes",
+          "@splunk/themes",
+        ]
+      : [],
+  },
   build: {
     outDir: "dist/client",
     emptyOutDir: true,
     chunkSizeWarningLimit: 5000,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
   },
 });
