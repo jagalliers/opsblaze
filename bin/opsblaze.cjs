@@ -245,7 +245,6 @@ function checkBuild() {
     const result = spawnSync("npm", ["run", "build"], {
       cwd: ROOT,
       stdio: "inherit",
-      shell: true,
     });
     if (result.status !== 0) {
       console.error("Build failed. Fix errors and try again.");
@@ -724,7 +723,7 @@ async function installSplunkViz() {
   const result = spawnSync(
     "npm",
     ["install", "--save", ...SPLUNK_PKGS, "--legacy-peer-deps"],
-    { cwd: ROOT, stdio: "inherit", shell: true }
+    { cwd: ROOT, stdio: "inherit" }
   );
 
   restoreSplunkPeerDeps(removed);
@@ -750,7 +749,6 @@ async function installSplunkViz() {
   const buildResult = spawnSync("npm", ["run", "build"], {
     cwd: ROOT,
     stdio: "inherit",
-    shell: true,
   });
 
   if (buildResult.status !== 0) {

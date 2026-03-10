@@ -342,7 +342,7 @@ async function main() {
     if (!overwrite) {
       heading("Skipping configuration \u2014 using existing .env");
       await installAndBuild();
-      finish();
+      await finish();
       return;
     }
   }
@@ -481,7 +481,7 @@ async function main() {
   // --- Install & Build ---
   await installAndBuild();
 
-  finish();
+  await finish();
 }
 
 async function installAndBuild() {
@@ -490,7 +490,6 @@ async function installAndBuild() {
   const installResult = spawnSync("npm", ["install", "--legacy-peer-deps"], {
     cwd: ROOT,
     stdio: "inherit",
-    shell: true,
   });
 
   if (installResult.status !== 0) {
@@ -538,7 +537,7 @@ async function installAndBuild() {
     const splunkResult = spawnSync(
       "npm",
       ["install", "--save", ...splunkPkgs, "--legacy-peer-deps"],
-      { cwd: ROOT, stdio: "pipe", shell: true }
+      { cwd: ROOT, stdio: "pipe" }
     );
 
     // Restore original package.json (peerDeps back, Splunk out of deps)
@@ -561,7 +560,6 @@ async function installAndBuild() {
   const buildResult = spawnSync("npm", ["run", "build"], {
     cwd: ROOT,
     stdio: "inherit",
-    shell: true,
   });
 
   if (buildResult.status !== 0) {
@@ -572,10 +570,34 @@ async function installAndBuild() {
   ok("Build complete");
 }
 
-function finish() {
+async function finish() {
   const port = readPortFromEnv();
   heading("Setup complete!");
 
+  const startNow = await askYesNo("Start the server now?", true);
+
+  if (startNow) {
+    rl.close();
+    console.log("");
+    const startResult = spawnSync("node", ["bin/opsblaze.cjs", "start"], {
+      cwd: ROOT,
+      stdio: "inherit",
+    });
+
+    if (startResult.status === 0) {
+      console.log(
+        `\n  Open ${CYAN}http://localhost:${port}${RESET} in your browser.\n`
+      );
+      console.log(`  ${DIM}Stop the server with: node bin/opsblaze.cjs stop${RESET}`);
+      console.log("");
+    } else {
+      warn("Server failed to start. You can try manually:");
+      console.log(`    ${CYAN}node bin/opsblaze.cjs start${RESET}\n`);
+    }
+    return;
+  }
+
+  console.log("");
   console.log("  Start the server:");
   console.log(`    ${CYAN}node bin/opsblaze.cjs start${RESET}\n`);
   console.log(
