@@ -46,16 +46,16 @@ function SystemStatusCard() {
 
   if (allOk) {
     return (
-      <div className="mt-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
-        <span className="block w-1.5 h-1.5 rounded-full bg-green-400" />
-        <span className="text-xs text-green-400/80">
-          {Object.keys(health.checks)
-            .map((name) => {
-              const label = name.charAt(0).toUpperCase() + name.slice(1);
-              return `${label} connected`;
-            })
-            .join(" \u00b7 ")}
-        </span>
+      <div className="mt-5 inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+        {Object.keys(health.checks).map((name) => {
+          const label = name.charAt(0).toUpperCase() + name.slice(1);
+          return (
+            <span key={name} className="inline-flex items-center gap-1.5">
+              <span className="block w-1.5 h-1.5 rounded-full bg-green-400" />
+              <span className="text-xs text-green-400/80">{label} connected</span>
+            </span>
+          );
+        })}
       </div>
     );
   }
