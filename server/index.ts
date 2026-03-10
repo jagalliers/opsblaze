@@ -421,11 +421,11 @@ app.get("/api/settings", apiLimiter, async (_req, res) => {
         splunkHost: process.env.SPLUNK_HOST ?? "",
         splunkPort: parseInt(process.env.SPLUNK_PORT ?? "8089", 10),
         splunkScheme: process.env.SPLUNK_SCHEME ?? "https",
-        splunkAuthMethod: process.env.SPLUNK_TOKEN ? "token" : "basic",
+        splunkAuthMethod: process.env.SPLUNK_TOKEN ? "Token" : "Basic",
         serverPort: PORT,
         bindAddress: HOST,
-        claudeAuthMethod: process.env.ANTHROPIC_API_KEY ? "api-key" : "cli",
-        serverMode: process.env.NODE_ENV === "production" ? "prod" : "dev",
+        claudeAuthMethod: process.env.ANTHROPIC_API_KEY ? "API Key" : "CLI",
+        serverMode: process.env.NODE_ENV === "production" ? "Prod" : "Dev",
       },
     });
   } catch (err) {

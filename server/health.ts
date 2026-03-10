@@ -46,7 +46,7 @@ export function checkSplunk(opts: {
 
   const requester = opts._requester ?? (opts.scheme === "https" ? https : http).request;
   const auth = splunkAuthHeader(opts);
-  const authLabel = opts.token ? "token" : "basic";
+  const authLabel = opts.token ? "Token" : "Basic";
 
   return new Promise((resolve) => {
     try {
@@ -113,7 +113,7 @@ export async function checkClaude(opts: {
             resp.resume();
             const code = resp.statusCode ?? 0;
             if (code >= 200 && code < 300) {
-              resolve({ status: "ok" });
+              resolve({ status: "ok", message: "API Key" });
             } else if (code === 401) {
               resolve({ status: "error", message: "invalid API key" });
             } else if (code === 429) {

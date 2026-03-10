@@ -269,13 +269,13 @@ function GeneralTab() {
                   </span>
                 )}
               </p>
-              {splunkCheck?.message && (
+              {splunkCheck?.message && splunkCheck.status !== "ok" && (
                 <p className="text-[11px] text-gray-500">{splunkCheck.message}</p>
               )}
             </div>
             {settings && (
               <span className="text-[10px] text-gray-600">
-                {settings.system.splunkAuthMethod} auth
+                {settings.system.splunkAuthMethod} Auth
               </span>
             )}
           </div>

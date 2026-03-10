@@ -47,17 +47,17 @@ describe("checkSplunk", () => {
 
   it("returns ok for 2xx status codes", async () => {
     const result = await checkSplunk({ ...splunkBase, _requester: fakeRequester(200) });
-    expect(result).toEqual({ status: "ok", message: "basic" });
+    expect(result).toEqual({ status: "ok", message: "Basic" });
   });
 
   it("returns ok for 204", async () => {
     const result = await checkSplunk({ ...splunkBase, _requester: fakeRequester(204) });
-    expect(result).toEqual({ status: "ok", message: "basic" });
+    expect(result).toEqual({ status: "ok", message: "Basic" });
   });
 
-  it("returns ok with 'token' message when token auth is used", async () => {
+  it("returns ok with 'Token' message when token auth is used", async () => {
     const result = await checkSplunk({ ...splunkBase, token: "t", _requester: fakeRequester(200) });
-    expect(result).toEqual({ status: "ok", message: "token" });
+    expect(result).toEqual({ status: "ok", message: "Token" });
   });
 
   it("returns degraded with 'auth failed' for 401", async () => {
@@ -154,7 +154,7 @@ describe("checkSplunk", () => {
 describe("checkClaude", () => {
   it("returns ok for 200 from Anthropic API", async () => {
     const result = await checkClaude({ apiKey: "sk-test", _requester: fakeRequester(200) });
-    expect(result).toEqual({ status: "ok" });
+    expect(result).toEqual({ status: "ok", message: "API Key" });
   });
 
   it("returns error with 'invalid API key' for 401", async () => {
