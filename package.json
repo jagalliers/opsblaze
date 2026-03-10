@@ -2,7 +2,7 @@
   "name": "opsblaze",
   "version": "0.1.0",
   "private": false,
-  "author": "OpsBlaze Contributors",
+  "author": "Jesse Galliers (https://github.com/jagalliers)",
   "license": "Apache-2.0",
   "description": "AI-powered Splunk investigation app with narrative analysis and interactive visualizations",
   "repository": {

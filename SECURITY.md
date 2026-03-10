@@ -6,7 +6,7 @@ If you discover a security vulnerability in OpsBlaze, please report it responsib
 
 **Do not file a public issue for security vulnerabilities.**
 
-Instead, please email the maintainers directly or open a private security advisory through GitHub's [Security Advisories](https://github.com/jagalliers/opsblaze/security/advisories/new) feature.
+Instead, please open a private security advisory through GitHub's [Security Advisories](https://github.com/jagalliers/opsblaze/security/advisories/new) feature, or contact the maintainer [@jagalliers](https://github.com/jagalliers) directly.
 
 Include the following in your report:
 

@@ -6,6 +6,6 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 
 ## Reporting
 
-If you experience or witness unacceptable behavior, please report it by opening a private security advisory on GitHub or contacting the maintainers directly.
+If you experience or witness unacceptable behavior, please report it by opening a private security advisory on GitHub or contacting the maintainer Jesse Galliers ([@jagalliers](https://github.com/jagalliers)) directly.
 
 Reports will be reviewed promptly and handled confidentially.

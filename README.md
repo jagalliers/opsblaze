@@ -184,6 +184,10 @@ Splunk is a registered trademark of Splunk Inc. in the United States and other c
 
 All other trademarks are the property of their respective owners.
 
+## Author
+
+**Jesse Galliers** -- [@jagalliers](https://github.com/jagalliers)
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).
