@@ -45,7 +45,13 @@ vi.mock("../lib/api", () => ({
   headers: () => ({}),
   fetchHealth: vi.fn().mockResolvedValue({ status: "ok", checks: {} }),
   listConversations: vi.fn().mockResolvedValue([
-    { id: "conv-1", title: "Old investigation", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), messageCount: 3 },
+    {
+      id: "conv-1",
+      title: "Old investigation",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messageCount: 3,
+    },
   ]),
   searchConversations: vi.fn().mockResolvedValue([]),
 }));

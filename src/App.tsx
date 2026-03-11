@@ -35,17 +35,23 @@ export function App() {
     setAllowAdditional(true);
   }, [startNewConversation]);
 
-  const handleLoadConversation = useCallback((id: string) => {
-    loadExistingConversation(id);
-    setSelectedSkills([]);
-    setAllowAdditional(true);
-  }, [loadExistingConversation]);
+  const handleLoadConversation = useCallback(
+    (id: string) => {
+      loadExistingConversation(id);
+      setSelectedSkills([]);
+      setAllowAdditional(true);
+    },
+    [loadExistingConversation]
+  );
 
-  const handleDeleteConversation = useCallback(async (id: string) => {
-    await deleteConversation(id);
-    setSelectedSkills([]);
-    setAllowAdditional(true);
-  }, [deleteConversation]);
+  const handleDeleteConversation = useCallback(
+    async (id: string) => {
+      await deleteConversation(id);
+      setSelectedSkills([]);
+      setAllowAdditional(true);
+    },
+    [deleteConversation]
+  );
 
   const sendWithSkills = useCallback(
     (message: string) => {
