@@ -29,6 +29,24 @@ export function App() {
   const hasSubstance =
     !!conversationId && messages.filter((m) => m.role === "assistant").length >= 1;
 
+  const handleNewConversation = useCallback(() => {
+    startNewConversation();
+    setSelectedSkills([]);
+    setAllowAdditional(true);
+  }, [startNewConversation]);
+
+  const handleLoadConversation = useCallback((id: string) => {
+    loadExistingConversation(id);
+    setSelectedSkills([]);
+    setAllowAdditional(true);
+  }, [loadExistingConversation]);
+
+  const handleDeleteConversation = useCallback(async (id: string) => {
+    await deleteConversation(id);
+    setSelectedSkills([]);
+    setAllowAdditional(true);
+  }, [deleteConversation]);
+
   const sendWithSkills = useCallback(
     (message: string) => {
       if (selectedSkills.length > 0) {
@@ -43,7 +61,7 @@ export function App() {
   return (
     <div className="flex flex-col h-screen bg-surface-0">
       <Header
-        onClear={startNewConversation}
+        onClear={handleNewConversation}
         onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onToggleSettings={() => setSettingsOpen((o) => !o)}
         onDistillSkill={() => setExtractorOpen(true)}
@@ -56,9 +74,9 @@ export function App() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         activeConversationId={conversationId}
-        onSelect={loadExistingConversation}
-        onDelete={deleteConversation}
-        onNew={startNewConversation}
+        onSelect={handleLoadConversation}
+        onDelete={handleDeleteConversation}
+        onNew={handleNewConversation}
       />
       <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <SkillExtractor

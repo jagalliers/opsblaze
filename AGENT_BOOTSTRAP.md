@@ -50,7 +50,7 @@ When discussing current file paths, use real paths. When discussing product iden
 - `server/index.ts` - server startup, Express routes (chat, conversations, MCP servers, skills, health, settings), SSE wiring, duplicate-shutdown guard, `.env` permission check
 - `server/env.ts` - environment variable validation (`validateEnv`)
 - `server/agent.ts` - `runAgent()`: invokes Claude Agent SDK `query()`, MCP server config, optional recording, skill scoping (`PreToolUse` hook for strict mode)
-- `server/pipeline.ts` - message stream processing loop (extracted for testability and replay); deferred skill emission in strict mode
+- `server/pipeline.ts` - message stream processing loop (extracted for testability and replay); deferred skill emission in strict mode; `classifyAgentError` for user-facing error messages (auth, rate limit, network, timeout)
 - `server/sse-helpers.ts` - SSE formatting, chart validation, text buffer processing
 - `server/recorder.ts` - JSONL recording of SDK message streams for replay testing
 - `server/conversations.ts` - file-based conversation persistence (CRUD, search, listing)
@@ -80,7 +80,7 @@ When discussing current file paths, use real paths. When discussing product iden
 
 ### Frontend
 - `src/main.tsx` - React entry point: ErrorBoundary, `createRoot`, mounts `App`
-- `src/App.tsx` - top-level layout, owns `selectedSkills`/`allowAdditional` state, wraps `sendMessage` for ChatView suggestion buttons
+- `src/App.tsx` - top-level layout, owns `selectedSkills`/`allowAdditional` state (reset on conversation new/load/delete), wraps `sendMessage` for ChatView suggestion buttons
 - `src/types.ts` - shared frontend types (`VizType`, `ChartBlock`, `TextBlock`, `SkillBlock`)
 - `src/hooks/useChat.ts` - chat state, stream handling, stop/cancel logic, skill scope routing (strict vs advisory), exports `buildSkillRequest` for testability
 - `src/lib/sse.ts` - SSE parser for text/chart/error/skill/done events
@@ -317,6 +317,7 @@ Tests use Vitest (config in `vitest.config.ts`, includes `**/__tests__/**/*.test
 - `src/lib/__tests__/sse.test.ts` - SSE parser event handling including `skills` param
 - `src/lib/__tests__/api.test.ts` - conversation CRUD, search, and export API client
 - `src/lib/__tests__/settings-api.test.ts` - MCP server and runtime settings API client
+- `src/__tests__/App.test.tsx` - App-level skill state reset on conversation new/load/delete
 
 Frontend component tests use `@testing-library/react`, `@testing-library/user-event`, and `jsdom`.
 
