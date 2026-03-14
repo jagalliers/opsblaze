@@ -1,6 +1,6 @@
 # Agent Bootstrap: AI-Powered Narrative Investigation Web App
 
-> **Last verified: 2026-03-09.** If this is more than a few sessions stale, audit sections 3-5 and 8-9 against the actual codebase before relying on them.
+> **Last verified: 2026-03-14.** If this is more than a few sessions stale, audit sections 3-5 and 8-9 against the actual codebase before relying on them.
 
 This document is for quickly bootstrapping a new agent instance into this project.
 
@@ -41,7 +41,7 @@ When discussing current file paths, use real paths. When discussing product iden
 ## 4) Current Project Structure (Important Files)
 
 ### Tooling & Deployment
-- `bin/setup.cjs` - interactive first-run setup wizard
+- `bin/setup.cjs` - interactive first-run setup wizard; detects running services and offers to stop them before proceeding
 - `bin/opsblaze.cjs` - service controller with built-in supervisor (start/stop/restart/status/logs); stale-build detection (auto-rebuild when sources are newer than dist), graceful port sweep (SIGTERM → wait → SIGKILL)
 - `bin/supervisor.cjs` - production daemon: daemonizes server, auto-restarts on crash with exponential backoff, log file management
 - `package.json` - scripts/dependencies (Apache-2.0, Splunk viz as optional peerDeps)

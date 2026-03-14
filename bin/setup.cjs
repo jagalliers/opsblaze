@@ -168,6 +168,162 @@ function validatePort(value, label) {
   return n;
 }
 
+// --- Running Service Detection (ported from opsblaze.cjs) ---
+
+const DATA_DIR = path.join(ROOT, "data");
+const STATE_FILE = path.join(DATA_DIR, ".opsblaze-state.json");
+const VITE_PORT = 5173;
+
+function readState() {
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+function clearState() {
+  try {
+    fs.unlinkSync(STATE_FILE);
+  } catch {
+    // already gone
+  }
+}
+
+function pidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function pidsOnPort(port) {
+  try {
+    const result = spawnSync("lsof", ["-i", `:${port}`, "-t"], {
+      encoding: "utf-8",
+      timeout: 3000,
+    });
+    if (result.stdout && result.stdout.trim()) {
+      return result.stdout
+        .trim()
+        .split("\n")
+        .map((p) => parseInt(p, 10))
+        .filter((p) => !isNaN(p));
+    }
+  } catch {
+    // lsof not available
+  }
+  return [];
+}
+
+function killPid(pid, signal = "SIGTERM") {
+  try {
+    process.kill(pid, signal);
+  } catch {
+    // already dead
+  }
+}
+
+function killProcessTree(pid) {
+  try {
+    process.kill(-pid, "SIGTERM");
+  } catch {
+    killPid(pid, "SIGTERM");
+  }
+  const deadline = Date.now() + 5000;
+  while (pidAlive(pid) && Date.now() < deadline) {
+    spawnSync("sleep", ["0.2"]);
+  }
+  if (pidAlive(pid)) {
+    try {
+      process.kill(-pid, "SIGKILL");
+    } catch {
+      killPid(pid, "SIGKILL");
+    }
+  }
+}
+
+function sweepPorts(port) {
+  const allPids = new Set();
+  for (const p of [port, VITE_PORT]) {
+    for (const pid of pidsOnPort(p)) {
+      allPids.add(pid);
+    }
+  }
+  if (allPids.size === 0) return 0;
+
+  for (const pid of allPids) {
+    killPid(pid, "SIGTERM");
+  }
+
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    let anyAlive = false;
+    for (const pid of allPids) {
+      if (pidAlive(pid)) { anyAlive = true; break; }
+    }
+    if (!anyAlive) break;
+    spawnSync("sleep", ["0.2"]);
+  }
+
+  let killed = 0;
+  for (const pid of allPids) {
+    if (pidAlive(pid)) {
+      killPid(pid, "SIGKILL");
+    }
+    killed++;
+  }
+  return killed;
+}
+
+function fullStop(port) {
+  const state = readState();
+  let stopped = false;
+
+  if (state && state.mode === "dev" && state.pid) {
+    if (pidAlive(state.pid)) {
+      killProcessTree(state.pid);
+      stopped = true;
+    }
+  }
+
+  if (state && state.mode === "prod" && state.pid) {
+    if (pidAlive(state.pid)) {
+      killPid(state.pid, "SIGTERM");
+      const deadline = Date.now() + 10000;
+      while (pidAlive(state.pid) && Date.now() < deadline) {
+        spawnSync("sleep", ["0.3"]);
+      }
+      if (pidAlive(state.pid)) {
+        killPid(state.pid, "SIGKILL");
+      }
+      stopped = true;
+    }
+    if (state.childPid && pidAlive(state.childPid)) {
+      killPid(state.childPid, "SIGKILL");
+      stopped = true;
+    }
+  }
+
+  const orphans = sweepPorts(port);
+  if (orphans > 0) stopped = true;
+
+  clearState();
+  return stopped;
+}
+
+function checkRunningService() {
+  const state = readState();
+  const port = parseInt(readPortFromEnv(), 10);
+  const portPids = pidsOnPort(port);
+  const tracked = state && state.pid && pidAlive(state.pid);
+  return tracked || portPids.length > 0
+    ? { running: true, mode: state?.mode || "unknown", port }
+    : { running: false };
+}
+
 // --- Splunk Connectivity Test ---
 
 function testSplunkConnection(config) {
@@ -330,6 +486,30 @@ async function main() {
     );
     rl.close();
     process.exit(1);
+  }
+
+  // --- Running service check ---
+  const svcStatus = checkRunningService();
+  if (svcStatus.running) {
+    console.log("");
+    warn(`OpsBlaze is currently running (${svcStatus.mode} mode, port ${svcStatus.port})`);
+    info("Setup needs to install dependencies and rebuild, which conflicts with a running server.");
+    const stopIt = await askYesNo("Stop OpsBlaze before continuing?", true);
+    if (stopIt) {
+      fullStop(svcStatus.port);
+      const remaining = pidsOnPort(svcStatus.port);
+      if (remaining.length > 0) {
+        fail(`Port ${svcStatus.port} is still in use (PID ${remaining.join(", ")}). Stop it manually and re-run setup.`);
+        rl.close();
+        process.exit(1);
+      }
+      ok("OpsBlaze stopped");
+    } else {
+      fail("Cannot safely run setup while OpsBlaze is running.");
+      info("Stop it first with: node bin/opsblaze.cjs stop");
+      rl.close();
+      process.exit(1);
+    }
   }
 
   // --- Existing .env check ---
@@ -502,14 +682,21 @@ async function installAndBuild() {
   // Optional Splunk visualizations
   heading("7b. Enhanced Visualizations (optional)");
 
-  console.log(`  ${DIM}OpsBlaze includes Chart.js charts by default.${RESET}`);
-  console.log(`  ${DIM}If you have access to the @splunk/visualizations npm packages,${RESET}`);
-  console.log(`  ${DIM}you can install them for premium charts.${RESET}`);
-  console.log(`  ${DIM}Note: @splunk/* packages are proprietary software subject to${RESET}`);
-  console.log(`  ${DIM}Splunk's own license terms and are not distributed with OpsBlaze.${RESET}`);
+  console.log(`  ${DIM}OpsBlaze includes Chart.js charts by default. You may optionally${RESET}`);
+  console.log(`  ${DIM}install Splunk's visualization packages.${RESET}`);
+  console.log("");
+  console.log(`  Installing will fetch proprietary @splunk/* packages from npm into your`);
+  console.log(`  environment. Use of these packages remains subject to Splunk's applicable`);
+  console.log(`  license terms.`);
+  console.log("");
+  console.log(`  Continue only if you hold a valid Splunk license and are authorized to`);
+  console.log(`  accept those terms on behalf of your organization.`);
+  console.log("");
+  console.log(`  OpsBlaze is an independent project and does not grant any rights to`);
+  console.log(`  Splunk software.`);
   console.log("");
 
-  const wantSplunkViz = await askYesNo("Install Splunk visualizations?", false);
+  const wantSplunkViz = await askYesNo("Accept and install Splunk visualizations?", false);
 
   if (wantSplunkViz) {
     process.stdout.write("  Installing Splunk visualization packages...");
