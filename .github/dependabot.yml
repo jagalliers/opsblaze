@@ -1,0 +1,33 @@
+# Dependency update policy.
+#
+# Cooldown is the supply-chain control here: malicious package versions are
+# typically published and pulled within 24-72 hours, so no version is adopted
+# until it has been public for at least 7 days (14 for semver-major bumps).
+# Cooldown applies to version updates only; security updates are exempt and
+# are raised immediately.
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
