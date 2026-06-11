@@ -140,13 +140,15 @@
     "shell-quote": "1.8.4",
     "protobufjs": "7.6.2",
     "hono": "4.12.24",
-    "ast-v8-to-istanbul": "1.0.3"
+    "ast-v8-to-istanbul": "1.0.3",
+    "import-in-the-middle": "3.0.1",
+    "acorn": "8.16.0"
   },
   "optionalDependencies": {
     "@opentelemetry/api": "~1.9.1",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.214.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
     "@opentelemetry/resources": "^2.6.1",
-    "@opentelemetry/sdk-node": "^0.214.0",
+    "@opentelemetry/sdk-node": "^0.218.0",
     "@opentelemetry/sdk-trace-node": "^2.6.1",
     "@opentelemetry/semantic-conventions": "^1.40.0"
   }
