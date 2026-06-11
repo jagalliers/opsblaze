@@ -23,6 +23,12 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 All checks must pass before submitting a pull request.
 
+## Dependencies
+
+- Use `npm ci` for routine installs. Reserve `npm install` for deliberate dependency changes, and review the resulting `package-lock.json` diff.
+- Dependency updates flow through Dependabot, which enforces a cooldown: new versions must be at least 7 days old (14 for semver-majors) before an update PR is opened. Please don't submit PRs that bump dependencies to versions published within the last few days.
+- Never run blanket `npm audit fix --force`; fix advisories with targeted upgrades.
+
 ## Pull Requests
 
 1. Open an issue first to discuss the change

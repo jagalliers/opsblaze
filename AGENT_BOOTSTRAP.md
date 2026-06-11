@@ -1,6 +1,6 @@
 # Agent Bootstrap: AI-Powered Narrative Investigation Web App
 
-> **Last verified: 2026-04-12.** If this is more than a few sessions stale, audit sections 3-5 and 8-9 against the actual codebase before relying on them.
+> **Last verified: 2026-06-11.** If this is more than a few sessions stale, audit sections 3-5 and 8-9 against the actual codebase before relying on them.
 
 This document is for quickly bootstrapping a new agent instance into this project.
 
@@ -119,7 +119,12 @@ When discussing current file paths, use real paths. When discussing product iden
 
 ### Splunk Packages and npm Operations
 
-The optional `@splunk/visualizations` packages are managed outside the lockfile by `bin/postinstall.cjs`. Any npm tree reconciliation command (`npm audit fix`, `npm update`, `npm dedupe`) will strip them from `node_modules`. **Always run `npm install` after these commands** to trigger the postinstall script that restores them. The marker file `data/.splunk-viz-enabled` controls whether postinstall restores the packages (present = restore, absent = skip). Security overrides for transitive dependencies (lodash, path-to-regexp) are in the `overrides` field of `package.json`.
+The optional `@splunk/visualizations` packages are managed outside the lockfile by `bin/postinstall.cjs`. Any npm tree reconciliation command (`npm audit fix`, `npm update`, `npm dedupe`) will strip them from `node_modules`. **Always run `npm install` after these commands** to trigger the postinstall script that restores them. The marker file `data/.splunk-viz-enabled` controls whether postinstall restores the packages (present = restore, absent = skip).
+
+The `overrides` field of `package.json` carries two kinds of transitive pins:
+
+- **Security pins**: `lodash`, `path-to-regexp`, and `shell-quote`. The `shell-quote` pin must stay as long as `concurrently@9` is in use — it pins a vulnerable `shell-quote` version exactly, and `concurrently@10` requires Node >= 22 (above this repo's Node 20 support floor).
+- **Supply-chain cooldown pins** (`protobufjs`, `hono`, `ast-v8-to-istanbul`, `acorn`, `import-in-the-middle`): added 2026-06-11 solely because the then-latest fixed versions had been published within the previous 72 hours. Safe to relax once newer versions have aged past the cooldown window.
 
 ### Mode Transitions
 
@@ -307,7 +312,7 @@ Run the full test suite:
 npm test
 ```
 
-Tests use Vitest (config in `vitest.config.ts`, includes `**/__tests__/**/*.test.{ts,tsx}`).
+Tests use Vitest (config in `vitest.config.ts`, includes `**/__tests__/**/*.test.{ts,tsx}`). A shared setup file (`src/test/setup.ts`, registered via `setupFiles`) polyfills `localStorage` for jsdom tests on Node >= 25, where Node's experimental WebStorage global otherwise shadows jsdom's implementation with `undefined`.
 
 ### Test Files
 
@@ -402,7 +407,7 @@ After committing locally, push to the remote:
 git push
 ```
 
-This triggers the CI pipeline (GitHub Actions), which runs typecheck, lint, tests (with coverage), and build across Node 20, 22, and 24.
+This triggers the CI pipeline (GitHub Actions), which runs typecheck, lint, tests (with coverage), and build across Node 20, 22, 24, and 26.
 
 ### Branch Workflow
 
@@ -431,7 +436,7 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file CHANGELOG.md
 
 ### CI Pipeline
 
-Defined in `.github/workflows/ci.yml`. Runs on `ubuntu-latest` with a matrix of Node 20, 22, and 24:
+Defined in `.github/workflows/ci.yml`. Runs on `ubuntu-latest` with a matrix of Node 20, 22, 24, and 26:
 
 1. `npm ci`
 2. `npm audit --audit-level=high`
@@ -439,3 +444,16 @@ Defined in `.github/workflows/ci.yml`. Runs on `ubuntu-latest` with a matrix of 
 4. `npm run lint`
 5. `npm run test:coverage`
 6. `npm run build`
+
+Note the audit step gates CI at `--audit-level=high`: any unfixed high/critical advisory in the dependency tree fails every push and PR.
+
+### Dependency Update Policy
+
+Dependency updates flow through Dependabot (`.github/dependabot.yml`): weekly npm and github-actions checks with a supply-chain cooldown — new versions must be at least 7 days old (14 days for semver-majors) before a PR is opened. Minor/patch npm updates arrive grouped; security updates bypass the cooldown.
+
+When reviewing a Dependabot PR (or making any dependency change), remember:
+
+- Dependabot's cooldown only covers packages it bumps **directly**. A direct bump can re-resolve transitive dependencies to versions published hours ago. Scan the lockfile diff before merging: publish age of every changed version (`npm view <pkg> time --json`), `resolved` URLs all on `registry.npmjs.org`, no surprise `bin` or install-script entries.
+- Use `npm ci` for routine installs; reserve `npm install` for deliberate dependency changes.
+- Never run blanket `npm audit fix --force` — fix advisories with targeted, cooldown-checked upgrades instead.
+- Do not take `concurrently@10` (requires Node >= 22) while Node 20 remains in the support matrix.

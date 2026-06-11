@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Fixed all 18 open npm audit findings (5 critical, 4 high, 9 moderate), including vitest UI server file read/execute, protobufjs code execution, shell-quote command injection, and the `@anthropic-ai/sdk` memory tool sandbox escape. `npm audit` is now clean.
+- Updated `@opentelemetry/sdk-node` 0.214 -> 0.218 to fix a Prometheus exporter crash via malformed HTTP request (GHSA-q7rr-3cgh-j5r3).
+- Added Dependabot with a supply-chain cooldown policy: new dependency versions must be at least 7 days old (14 for semver-majors) before update PRs are opened.
+
+### Fixed
+
+- Test suite failures on Node >= 25, where Node's experimental WebStorage `localStorage` global shadowed jsdom's implementation; a vitest setup shim now provides an in-memory `localStorage` when needed.
+
+### Changed
+
+- CI matrix extended to Node 26 (now 20/22/24/26); `actions/checkout` and `actions/setup-node` updated to v6.
+- Routine dependency refresh via grouped Dependabot updates (Claude Agent SDK 0.3.x, dotenv, js-yaml, tsx, zod, autoprefixer, prettier, OpenTelemetry semantic-conventions).
+
 ## [0.1.0] - 2026-03-04
 
 ### Added
