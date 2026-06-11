@@ -136,7 +136,11 @@
   },
   "overrides": {
     "lodash": "4.18.1",
-    "path-to-regexp": "8.4.2"
+    "path-to-regexp": "8.4.2",
+    "shell-quote": "1.8.4",
+    "protobufjs": "7.6.2",
+    "hono": "4.12.24",
+    "ast-v8-to-istanbul": "1.0.3"
   },
   "optionalDependencies": {
     "@opentelemetry/api": "~1.9.1",
