@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Fixed two high-severity esbuild advisories (GHSA-gv7w-rqvm-qjhr remote code execution via `NPM_CONFIG_REGISTRY` in Deno contexts, GHSA-g7r4-m6w7-qqqr arbitrary file read via the dev server on Windows): tsx's esbuild updated in-range to the patched 0.28.1, and Vite upgraded 6 -> 8 (with vitest 4.1 and `@vitejs/plugin-react` 6) since no patched esbuild exists for the Vite 6 dependency range — Vite 8 no longer uses esbuild at all.
 - Fixed all 18 open npm audit findings (5 critical, 4 high, 9 moderate), including vitest UI server file read/execute, protobufjs code execution, shell-quote command injection, and the `@anthropic-ai/sdk` memory tool sandbox escape. `npm audit` is now clean.
 - Updated `@opentelemetry/sdk-node` 0.214 -> 0.218 to fix a Prometheus exporter crash via malformed HTTP request (GHSA-q7rr-3cgh-j5r3).
 - Added Dependabot with a supply-chain cooldown policy: new dependency versions must be at least 7 days old (14 for semver-majors) before update PRs are opened.
