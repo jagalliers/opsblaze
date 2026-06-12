@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed all 18 open npm audit findings (5 critical, 4 high, 9 moderate), including vitest UI server file read/execute, protobufjs code execution, shell-quote command injection, and the `@anthropic-ai/sdk` memory tool sandbox escape. `npm audit` is now clean.
 - Updated `@opentelemetry/sdk-node` 0.214 -> 0.218 to fix a Prometheus exporter crash via malformed HTTP request (GHSA-q7rr-3cgh-j5r3).
 - Added Dependabot with a supply-chain cooldown policy: new dependency versions must be at least 7 days old (14 for semver-majors) before update PRs are opened.
+- Proprietary `@splunk/*` visualization packages can no longer leak into the committed lockfile: `install-splunk-viz` now installs with `--no-save`, and a new guard (`bin/check-splunk-viz.cjs`) fails CI if they appear in `package.json` or `package-lock.json`, with a postinstall warning on the machine where contamination occurs.
 
 ### Fixed
 

@@ -44,6 +44,7 @@ When discussing current file paths, use real paths. When discussing product iden
 - `bin/setup.cjs` - interactive first-run setup wizard; detects running services and offers to stop them before proceeding
 - `bin/opsblaze.cjs` - service controller with built-in supervisor (start/stop/restart/status/logs); stale-build detection (auto-rebuild when sources are newer than dist), graceful port sweep (SIGTERM → wait → SIGKILL)
 - `bin/supervisor.cjs` - production daemon: daemonizes server, auto-restarts on crash with exponential backoff, log file management
+- `bin/check-splunk-viz.cjs` - license-leak guard: fails if proprietary `@splunk/*` packages appear in `package.json` or `package-lock.json` (run fatally in CI, as a warning from postinstall)
 - `package.json` - scripts/dependencies (Apache-2.0, Splunk viz as optional peerDeps)
 
 ### Server
@@ -120,6 +121,8 @@ When discussing current file paths, use real paths. When discussing product iden
 ### Splunk Packages and npm Operations
 
 The optional `@splunk/visualizations` packages are managed outside the lockfile by `bin/postinstall.cjs`. Any npm tree reconciliation command (`npm audit fix`, `npm update`, `npm dedupe`) will strip them from `node_modules`. **Always run `npm install` after these commands** to trigger the postinstall script that restores them. The marker file `data/.splunk-viz-enabled` controls whether postinstall restores the packages (present = restore, absent = skip).
+
+**License-leak guard**: the `@splunk/*` packages are proprietary and must never be recorded in `package.json` or `package-lock.json` (beyond the intentional optional `peerDependencies` references) — a contaminated lockfile makes every public `npm ci` auto-install proprietary software. This has happened before (commit `3300462`, cleaned up in `adada81`): an npm operation on an opted-in machine swept the whole `@splunk` tree into the lockfile. Defenses now in place: `install-splunk-viz` installs with `--no-save`, `bin/check-splunk-viz.cjs` fails CI if `@splunk` entries appear, and postinstall prints a warning on the machine where contamination happens. If the check fires locally: `git checkout -- package-lock.json`, then `npm ci`.
 
 The `overrides` field of `package.json` carries two kinds of transitive pins:
 
@@ -438,12 +441,13 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file CHANGELOG.md
 
 Defined in `.github/workflows/ci.yml`. Runs on `ubuntu-latest` with a matrix of Node 20, 22, 24, and 26:
 
-1. `npm ci`
-2. `npm audit --audit-level=high`
-3. `npm run typecheck`
-4. `npm run lint`
-5. `npm run test:coverage`
-6. `npm run build`
+1. `node bin/check-splunk-viz.cjs` (proprietary package leak guard)
+2. `npm ci`
+3. `npm audit --audit-level=high`
+4. `npm run typecheck`
+5. `npm run lint`
+6. `npm run test:coverage`
+7. `npm run build`
 
 Note the audit step gates CI at `--audit-level=high`: any unfixed high/critical advisory in the dependency tree fails every push and PR.
 

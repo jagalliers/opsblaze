@@ -720,24 +720,17 @@ async function installSplunkViz() {
   // removing the peer declarations, installing, then restoring them.
   const removed = stripSplunkPeerDeps();
 
+  // --no-save keeps the proprietary packages out of BOTH package.json and
+  // package-lock.json (the lockfile is committed and public; recording them
+  // there would make every `npm ci` auto-install proprietary software).
+  // Same flags as the postinstall auto-restore path in bin/postinstall.cjs.
   const result = spawnSync(
     "npm",
-    ["install", "--save", ...SPLUNK_PKGS, "--legacy-peer-deps"],
+    ["install", "--no-save", ...SPLUNK_PKGS, "--legacy-peer-deps", "--ignore-scripts"],
     { cwd: ROOT, stdio: "inherit" }
   );
 
   restoreSplunkPeerDeps(removed);
-
-  // After restoring peerDeps, also remove the packages from dependencies
-  // (they were added by --save) so the open-source package.json stays clean.
-  const pkgPath = path.join(ROOT, "package.json");
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-  for (const name of SPLUNK_PKGS) {
-    if (pkg.dependencies && pkg.dependencies[name]) {
-      delete pkg.dependencies[name];
-    }
-  }
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
   if (result.status !== 0) {
     console.error("\nFailed to install Splunk visualization packages.");

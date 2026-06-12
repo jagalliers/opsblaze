@@ -13,6 +13,21 @@ const ROOT = path.resolve(__dirname, "..");
 const MARKER = path.join(ROOT, "data", ".splunk-viz-enabled");
 const SPLUNK_DIR = path.join(ROOT, "node_modules", "@splunk", "visualizations");
 
+// Warn (but don't fail the install) if proprietary @splunk packages have
+// leaked into the manifest/lockfile — catches it on the machine where it
+// happens, before the lockfile gets committed. CI runs the same check fatally.
+const leakCheck = spawnSync(
+  process.execPath,
+  [path.join(__dirname, "check-splunk-viz.cjs")],
+  { encoding: "utf-8" }
+);
+if (leakCheck.status !== 0) {
+  console.warn(leakCheck.stderr || leakCheck.stdout || "");
+  console.warn(
+    "WARNING: do not commit package.json/package-lock.json in this state."
+  );
+}
+
 if (!fs.existsSync(MARKER)) process.exit(0);
 if (fs.existsSync(SPLUNK_DIR)) process.exit(0);
 
