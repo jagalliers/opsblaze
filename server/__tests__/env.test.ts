@@ -20,7 +20,7 @@ describe("validateEnv", () => {
       expect(result.env.SPLUNK_HOST).toBe("splunk.example.com");
       expect(result.env.SPLUNK_PORT).toBe(8089);
       expect(result.env.PORT).toBe(3000);
-      expect(result.env.CLAUDE_MODEL).toBe("claude-opus-4-6");
+      expect(result.env.CLAUDE_MODEL).toBe("claude-opus-4-8");
     }
   });
 
@@ -57,8 +57,8 @@ describe("validateEnv", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.env.CLAUDE_EFFORT).toBe("high");
-      expect(result.env.OPSBLAZE_STREAM_TIMEOUT_MS).toBe(300_000);
-      expect(result.env.OPSBLAZE_MAX_TURNS).toBe(30);
+      expect(result.env.OPSBLAZE_STREAM_TIMEOUT_MS).toBe(900_000);
+      expect(result.env.OPSBLAZE_MAX_TURNS).toBe(120);
     }
   });
 

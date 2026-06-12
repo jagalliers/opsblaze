@@ -615,7 +615,7 @@ async function main() {
   console.log("");
 
   const host = await ask("Bind address (use 0.0.0.0 for remote access)", "127.0.0.1");
-  const claudeModel = await ask("Claude model", "claude-opus-4-6");
+  const claudeModel = await ask("Claude model", "claude-opus-4-8");
 
   // --- Write .env ---
   heading("6. Writing configuration");
@@ -649,7 +649,7 @@ async function main() {
     envLines.push(`HOST=${host}`);
   }
 
-  if (claudeModel && claudeModel !== "claude-opus-4-6") {
+  if (claudeModel && claudeModel !== "claude-opus-4-8") {
     envLines.push(`CLAUDE_MODEL=${claudeModel}`);
   }
 

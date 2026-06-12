@@ -5,7 +5,7 @@ import { logger } from "./logger.js";
 
 const runtimeSettingsSchema = z.object({
   claudeModel: z.string().min(1).optional(),
-  claudeEffort: z.enum(["low", "medium", "high", "max"]).optional(),
+  claudeEffort: z.enum(["low", "medium", "high", "xhigh", "max"]).optional(),
   maxTurns: z.number().int().min(1).max(200).optional(),
   streamTimeoutMs: z.number().int().min(30_000).max(1_800_000).optional(),
 });
@@ -55,26 +55,30 @@ export async function updateRuntimeSettings(
 
 export async function getClaudeModel(): Promise<string> {
   const settings = await loadRuntimeSettings();
-  return settings.claudeModel || process.env.CLAUDE_MODEL || "claude-opus-4-6";
+  return settings.claudeModel || process.env.CLAUDE_MODEL || "claude-opus-4-8";
 }
 
-export async function getClaudeEffort(): Promise<"low" | "medium" | "high" | "max"> {
+export type ClaudeEffort = "low" | "medium" | "high" | "xhigh" | "max";
+
+const EFFORT_LEVELS: readonly ClaudeEffort[] = ["low", "medium", "high", "xhigh", "max"];
+
+export async function getClaudeEffort(): Promise<ClaudeEffort> {
   const settings = await loadRuntimeSettings();
   const effort = settings.claudeEffort || process.env.CLAUDE_EFFORT;
-  if (effort === "low" || effort === "medium" || effort === "high" || effort === "max") {
-    return effort;
+  if (EFFORT_LEVELS.includes(effort as ClaudeEffort)) {
+    return effort as ClaudeEffort;
   }
   return "high";
 }
 
 export async function getMaxTurns(): Promise<number> {
   const settings = await loadRuntimeSettings();
-  return settings.maxTurns || parseInt(process.env.OPSBLAZE_MAX_TURNS ?? "30", 10);
+  return settings.maxTurns || parseInt(process.env.OPSBLAZE_MAX_TURNS ?? "120", 10);
 }
 
 export async function getStreamTimeoutMs(): Promise<number> {
   const settings = await loadRuntimeSettings();
   return (
-    settings.streamTimeoutMs || parseInt(process.env.OPSBLAZE_STREAM_TIMEOUT_MS ?? "300000", 10)
+    settings.streamTimeoutMs || parseInt(process.env.OPSBLAZE_STREAM_TIMEOUT_MS ?? "900000", 10)
   );
 }

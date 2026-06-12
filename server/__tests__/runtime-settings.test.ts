@@ -73,7 +73,7 @@ describe("getClaudeModel", () => {
   });
 
   it("falls back to default when no env or runtime setting", async () => {
-    expect(await mod.getClaudeModel()).toBe("claude-opus-4-6");
+    expect(await mod.getClaudeModel()).toBe("claude-opus-4-8");
   });
 
   it("prefers runtime setting over env var", async () => {
@@ -114,8 +114,8 @@ describe("getMaxTurns", () => {
     expect(await mod.getMaxTurns()).toBe(50);
   });
 
-  it("falls back to default (30) when neither is set", async () => {
-    expect(await mod.getMaxTurns()).toBe(30);
+  it("falls back to default (120) when neither is set", async () => {
+    expect(await mod.getMaxTurns()).toBe(120);
   });
 
   it("prefers runtime setting over env var", async () => {
@@ -135,8 +135,8 @@ describe("getStreamTimeoutMs", () => {
     expect(await mod.getStreamTimeoutMs()).toBe(600000);
   });
 
-  it("falls back to default (300000) when neither is set", async () => {
-    expect(await mod.getStreamTimeoutMs()).toBe(300000);
+  it("falls back to default (900000) when neither is set", async () => {
+    expect(await mod.getStreamTimeoutMs()).toBe(900000);
   });
 
   it("prefers runtime setting over env var", async () => {

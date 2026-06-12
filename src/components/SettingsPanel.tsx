@@ -203,8 +203,8 @@ function GeneralTab() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [model, setModel] = useState("");
   const [effort, setEffort] = useState("");
-  const [maxTurns, setMaxTurns] = useState(30);
-  const [streamTimeout, setStreamTimeout] = useState(300000);
+  const [maxTurns, setMaxTurns] = useState(120);
+  const [streamTimeout, setStreamTimeout] = useState(900000);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -334,9 +334,17 @@ function GeneralTab() {
             <input
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              placeholder="claude-opus-4-6"
+              placeholder="claude-opus-4-8"
+              list="claude-model-suggestions"
               className={monoInputClass}
             />
+            <datalist id="claude-model-suggestions">
+              <option value="claude-opus-4-8" />
+              <option value="claude-fable-5" />
+              <option value="claude-opus-4-7" />
+              <option value="claude-sonnet-4-6" />
+              <option value="claude-haiku-4-5" />
+            </datalist>
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Thinking Effort</label>
@@ -348,6 +356,7 @@ function GeneralTab() {
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
+              <option value="xhigh">X-High</option>
               <option value="max">Max</option>
             </select>
           </div>
@@ -364,7 +373,8 @@ function GeneralTab() {
               className={inputClass}
             />
             <p className="text-[11px] text-gray-600 mt-1">
-              Maximum agent turns per investigation (1–200)
+              Maximum agent turns per investigation (1–200). One turn is one model response plus its
+              tool results — a single turn may include several parallel Splunk queries.
             </p>
           </div>
           <div>

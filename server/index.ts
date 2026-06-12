@@ -892,7 +892,7 @@ const server = app.listen(PORT, HOST, async () => {
   logger.info({ port: PORT, host: HOST }, "OpsBlaze server running");
   logger.info(
     {
-      model: process.env.CLAUDE_MODEL || "claude-opus-4-6",
+      model: process.env.CLAUDE_MODEL || "claude-opus-4-8",
       effort: process.env.CLAUDE_EFFORT || "high",
     },
     "Claude Agent SDK configured"

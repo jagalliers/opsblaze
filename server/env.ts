@@ -22,16 +22,16 @@ const envSchema = z.object({
     .transform((v) => v === "true"),
 
   ANTHROPIC_API_KEY: z.string().optional(),
-  CLAUDE_MODEL: z.string().default("claude-opus-4-6"),
-  CLAUDE_EFFORT: z.enum(["low", "medium", "high", "max"]).default("high"),
+  CLAUDE_MODEL: z.string().default("claude-opus-4-8"),
+  CLAUDE_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).default("high"),
 
   PORT: positiveInt.max(65535).default(3000),
   HOST: z.string().default("127.0.0.1"),
 
   OPSBLAZE_ALLOWED_ORIGINS: z.string().optional(),
   OPSBLAZE_RATE_LIMIT: positiveInt.default(10),
-  OPSBLAZE_STREAM_TIMEOUT_MS: positiveInt.default(300_000),
-  OPSBLAZE_MAX_TURNS: positiveInt.default(30),
+  OPSBLAZE_STREAM_TIMEOUT_MS: positiveInt.default(900_000),
+  OPSBLAZE_MAX_TURNS: positiveInt.default(120),
   OPSBLAZE_MAX_HISTORY: positiveInt.default(20),
   OPSBLAZE_MAX_MESSAGE_LEN: positiveInt.default(10_000),
 

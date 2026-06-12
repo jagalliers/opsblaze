@@ -184,8 +184,16 @@ All env vars are documented in `.env.example`. The full set with defaults:
 **Alternative**: Set `ANTHROPIC_API_KEY` in `.env` for API key auth (pay-per-use billing).
 If `ANTHROPIC_API_KEY` is set, it takes precedence over CLI OAuth.
 
-Optional: set `CLAUDE_MODEL` in `.env` to override the default model (default: `claude-opus-4-6`).
-Optional: set `CLAUDE_EFFORT` to `low`, `medium`, `high`, or `max` (default: `high`) to control adaptive thinking depth.
+Optional: set `CLAUDE_MODEL` in `.env` to override the default model (default: `claude-opus-4-8`).
+Optional: set `CLAUDE_EFFORT` to `low`, `medium`, `high`, `xhigh`, or `max` (default: `high`) to control adaptive thinking depth.
+
+**Model selection notes**: The Settings UI suggests current model IDs (`claude-opus-4-8`,
+`claude-fable-5`, `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-haiku-4-5`) but accepts any
+model ID as free text. `claude-fable-5` is selectable but deliberately not the default: its
+safety classifiers cover the cybersecurity domain — squarely where a SIEM investigation app
+operates — and the bundled Agent SDK exposes no control for the classifier `fallbacks` API
+parameter (the SDK's `fallbackModel` option only covers overload/unavailability retry), so
+flagged requests may surface as refusals mid-investigation.
 
 ### Server
 
@@ -193,8 +201,8 @@ Optional: set `CLAUDE_EFFORT` to `low`, `medium`, `high`, or `max` (default: `hi
 - `HOST` (default `127.0.0.1`; use `0.0.0.0` for LAN access)
 - `OPSBLAZE_ALLOWED_ORIGINS` — comma-separated CORS origins (default: `http://localhost:5173,http://localhost:3000`)
 - `OPSBLAZE_RATE_LIMIT` — max requests/minute/IP to `/api/chat` (default `10`)
-- `OPSBLAZE_STREAM_TIMEOUT_MS` — default max SSE stream duration before abort (default `300000`); also configurable in Settings UI
-- `OPSBLAZE_MAX_TURNS` — default max agent turns per request (default `30`); also configurable in Settings UI
+- `OPSBLAZE_STREAM_TIMEOUT_MS` — default max SSE stream duration before abort (default `900000`, i.e. 15 minutes); also configurable in Settings UI
+- `OPSBLAZE_MAX_TURNS` — default max agent turns per request (default `120`); also configurable in Settings UI. A turn is one API round-trip (one model response plus its tool results), not one tool call — a single turn may include several parallel Splunk queries.
 - `OPSBLAZE_MAX_HISTORY` — max conversation exchanges sent to Claude (default `20`)
 - `OPSBLAZE_MAX_MESSAGE_LEN` — max input message length in characters (default `10000`)
 
