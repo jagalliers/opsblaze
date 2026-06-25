@@ -1,7 +1,10 @@
 // @ts-nocheck -- This file is only imported when @splunk/visualizations is installed (build-time detection).
 import React, { Suspense, lazy } from "react";
-import SplunkThemeProvider from "@splunk/themes/SplunkThemeProvider";
+import * as SplunkThemeProviderModule from "@splunk/themes/SplunkThemeProvider";
 import type { VizType, SplunkDataSources } from "../types";
+import { interopDefault } from "./splunkInterop";
+
+const SplunkThemeProvider = interopDefault(SplunkThemeProviderModule);
 
 if (typeof window !== "undefined" && typeof window.locale_name !== "function") {
   const identity = (s: string) => s;
@@ -40,14 +43,17 @@ function lazyWithRetry(
   });
 }
 
+const loadViz = (factory: () => Promise<unknown>) => () =>
+  factory().then((mod) => ({ default: interopDefault(mod) }));
+
 const vizComponents: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
-  line: lazyWithRetry(() => import("@splunk/visualizations/Line")),
-  area: lazyWithRetry(() => import("@splunk/visualizations/Area")),
-  bar: lazyWithRetry(() => import("@splunk/visualizations/Bar")),
-  column: lazyWithRetry(() => import("@splunk/visualizations/Column")),
-  pie: lazyWithRetry(() => import("@splunk/visualizations/Pie")),
-  singlevalue: lazyWithRetry(() => import("@splunk/visualizations/SingleValue")),
-  table: lazyWithRetry(() => import("@splunk/visualizations/Table")),
+  line: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Line"))),
+  area: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Area"))),
+  bar: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Bar"))),
+  column: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Column"))),
+  pie: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Pie"))),
+  singlevalue: lazyWithRetry(loadViz(() => import("@splunk/visualizations/SingleValue"))),
+  table: lazyWithRetry(loadViz(() => import("@splunk/visualizations/Table"))),
 };
 
 interface SplunkVizRendererProps {

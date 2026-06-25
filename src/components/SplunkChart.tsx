@@ -3,16 +3,35 @@ import type { VizType, SplunkDataSources } from "../types";
 
 declare const __SPLUNK_VIZ_AVAILABLE__: boolean;
 
+const SPLUNK_VIZ_AVAILABLE =
+  typeof __SPLUNK_VIZ_AVAILABLE__ !== "undefined" && __SPLUNK_VIZ_AVAILABLE__;
+
+// When Splunk was installed but its visualizations break at runtime, fall back
+// to Chart.js *loudly*. Historically this fallback was silent, so bundler/CJS-
+// interop regressions (the recurring G9 bug) shipped unnoticed because CI never
+// installs the proprietary @splunk packages. Stay silent only when Splunk was
+// never installed (the legitimate Chart.js-default case).
+function reportSplunkVizFallback(stage: "load" | "render", err: unknown) {
+  if (!SPLUNK_VIZ_AVAILABLE) return;
+  console.error(
+    `[SplunkChart] Splunk visualizations are installed but failed to ${stage}; ` +
+      "falling back to Chart.js. This is almost always a bundler/CJS-interop regression " +
+      '(e.g. React error #130 "got: object"). See AGENT_BOOTSTRAP ' +
+      '"Splunk viz interop is bundler-fragile" and HANDOFF G9.',
+    err
+  );
+}
+
 const ChartJSFallback = lazy(() => import("./ChartJSRenderer"));
 
-const SplunkVizRenderer =
-  typeof __SPLUNK_VIZ_AVAILABLE__ !== "undefined" && __SPLUNK_VIZ_AVAILABLE__
-    ? lazy(() =>
-        import("./SplunkVizRenderer").catch(() => {
-          return import("./ChartJSRenderer");
-        })
-      )
-    : null;
+const SplunkVizRenderer = SPLUNK_VIZ_AVAILABLE
+  ? lazy(() =>
+      import("./SplunkVizRenderer").catch((err) => {
+        reportSplunkVizFallback("load", err);
+        return import("./ChartJSRenderer");
+      })
+    )
+  : null;
 
 const SINGLEVALUE_MAX_HEIGHT = 160;
 
@@ -88,6 +107,10 @@ class ChartFallbackBoundary extends Component<
 
   static getDerivedStateFromError(): ChartFallbackBoundaryState {
     return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    reportSplunkVizFallback("render", error);
   }
 
   render() {
