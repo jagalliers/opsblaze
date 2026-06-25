@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `@opentelemetry/sdk-node` 0.214 -> 0.218 to fix a Prometheus exporter crash via malformed HTTP request (GHSA-q7rr-3cgh-j5r3).
 - Added Dependabot with a supply-chain cooldown policy: new dependency versions must be at least 7 days old (14 for semver-majors) before update PRs are opened.
 - Proprietary `@splunk/*` visualization packages can no longer leak into the committed lockfile: both `install-splunk-viz` and the setup wizard (`bin/setup.cjs`) now install with `--no-save --ignore-scripts`, and a new guard (`bin/check-splunk-viz.cjs`) fails CI if they appear in `package.json` or `package-lock.json`, with a postinstall warning on the machine where contamination occurs.
+- Cleared two newly-disclosed high-severity advisories that `npm audit --audit-level=high` (the CI gate) now flags on the existing dependency tree: bumped the `hono` override 4.12.24 -> 4.12.26 (fixes `serve-static` path traversal GHSA-wwfh-h76j-fc44 and related Hono advisories) and added an `undici` 7.28.0 override (transitive via the `jsdom` dev dependency only; fixes the SOCKS5 TLS-validation bypass GHSA-vmh5-mc38-953g and related undici advisories). Both patched versions are past the 7-day supply-chain cooldown; the change is targeted `overrides` only, avoiding the breaking `@anthropic-ai/claude-agent-sdk` downgrade that `npm audit fix --force` proposed.
 
 ### Fixed
 
