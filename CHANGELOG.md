@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Splunk visualizations silently fell back to Chart.js after the Vite 8 (rolldown) upgrade, even when the optional `@splunk/*` packages were installed. Rolldown surfaces the CommonJS default export of those packages double-wrapped (`{ default: Component }`) where Rollup unwrapped it, so each lazily-loaded chart component resolved to an object and threw React error #130 at render time, tripping the Chart.js fallback. `SplunkVizRenderer` now normalizes the CommonJS default export through a bundler-agnostic `interopDefault` unwrap (`src/components/splunkInterop.ts`) before handing components to React. This is the third recurrence of the same class of bug across bundler changes, so it is now guarded two ways: the Chart.js fallback logs a loud `console.error` when `@splunk` is installed but a chart fails to load or render (staying silent only when Splunk was never installed), and a regression test (`splunkInterop.test.tsx`) asserts every Splunk viz/theme default export unwraps to a component function — it runs automatically on any machine with `@splunk` installed and is skipped in CI. Verified end-to-end in a clean clone under the real Express server (production CSP, which still requires `script-src 'unsafe-eval'`) and in dev mode.
 - Test suite failures on Node >= 25, where Node's experimental WebStorage `localStorage` global shadowed jsdom's implementation; a vitest setup shim now provides an in-memory `localStorage` when needed.
+- Port-based process detection (`opsblaze status`/`stop`, the production supervisor's restart wait, and the setup wizard) now matches only the TCP LISTEN socket instead of any connection on the port. Previously an unrelated client holding an ESTABLISHED connection (e.g. an IDE attached to the Vite port) could be reported as a server PID and killed during orphan cleanup.
 
 ### Changed
 
