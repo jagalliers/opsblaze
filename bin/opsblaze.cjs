@@ -76,10 +76,17 @@ function pidAlive(pid) {
 
 function pidsOnPort(port) {
   try {
-    const result = spawnSync("lsof", ["-i", `:${port}`, "-t"], {
-      encoding: "utf-8",
-      timeout: 3000,
-    });
+    // -sTCP:LISTEN: only match the listening server, not ESTABLISHED client
+    // connections (e.g. an IDE holding a connection to the port would
+    // otherwise show up as a bogus PID and get killed by sweepPorts).
+    const result = spawnSync(
+      "lsof",
+      ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"],
+      {
+        encoding: "utf-8",
+        timeout: 3000,
+      }
+    );
     if (result.stdout && result.stdout.trim()) {
       return result.stdout
         .trim()

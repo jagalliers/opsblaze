@@ -72,10 +72,17 @@ function readPort() {
 
 function portInUse(port) {
   try {
-    const result = spawnSync("lsof", ["-i", `:${port}`, "-t"], {
-      encoding: "utf-8",
-      timeout: 3000,
-    });
+    // -sTCP:LISTEN: only a listening socket blocks rebinding; ESTABLISHED
+    // client connections (e.g. an IDE attached to the port) must not delay
+    // the restart loop.
+    const result = spawnSync(
+      "lsof",
+      ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"],
+      {
+        encoding: "utf-8",
+        timeout: 3000,
+      }
+    );
     return !!(result.stdout && result.stdout.trim());
   } catch {
     return false;
