@@ -730,7 +730,12 @@ async function installAndBuild() {
 
     const splunkResult = spawnSync(
       "npm",
-      ["install", "--save", ...splunkPkgs, "--legacy-peer-deps"],
+      // --no-save keeps the proprietary packages out of BOTH package.json and
+      // package-lock.json (the lockfile is committed and public; recording them
+      // there would make every `npm ci` auto-install proprietary software).
+      // --ignore-scripts avoids running their install hooks. Mirrors the
+      // hardened `node bin/opsblaze.cjs install-splunk-viz` path.
+      ["install", "--no-save", ...splunkPkgs, "--legacy-peer-deps", "--ignore-scripts"],
       { cwd: ROOT, stdio: "pipe" }
     );
 
@@ -738,6 +743,13 @@ async function installAndBuild() {
     fs.writeFileSync(pkgPath, pkgBefore);
 
     if (splunkResult.status === 0) {
+      // Marker so bin/postinstall.cjs auto-restores the packages after future
+      // npm tree operations (npm audit fix / update / dedupe strip them).
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(DATA_DIR, ".splunk-viz-enabled"),
+        new Date().toISOString() + "\n"
+      );
       console.log(` ${GREEN}done${RESET}`);
       ok("Splunk visualizations installed");
     } else {
