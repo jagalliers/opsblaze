@@ -128,11 +128,11 @@ The optional `@splunk/visualizations` packages are managed outside the lockfile 
 
 **Manual verification** (do this whenever you touch the bundler, the CSP, or `@splunk` versions): with `@splunk` installed, `npm run build`, serve via the real server, open a chart, and confirm it renders a native Splunk `<svg>` — not a Chart.js `<canvas>` — with no React error #130 in the console. On a machine with `@splunk` installed, `npm test` is the fast proxy: the `splunkInterop` regression test will fail if the unwrap ever stops resolving a real Splunk export to a function.
 
-The `overrides` field of `package.json` carries two kinds of transitive pins:
+The `overrides` field of `package.json` carries four transitive pins (trimmed from nine on 2026-09-01 — pins whose dependents' own ranges already resolved safely were dropped: `lodash`, `path-to-regexp`, `shell-quote` (concurrently 9.2.4 exact-pins the patched 1.9.0), `undici` (jsdom's `^7.25.0` resolves the patched 7.29.0), `acorn`, `ast-v8-to-istanbul`):
 
-- **Security pins**: `lodash`, `path-to-regexp`, and `shell-quote`. The `shell-quote` pin must stay as long as `concurrently@9` is in use — it pins a vulnerable `shell-quote` version exactly, and `concurrently@10` requires Node >= 22 (above this repo's Node 20 support floor).
-- **Supply-chain cooldown pins** (`protobufjs`, `ast-v8-to-istanbul`, `acorn`, `import-in-the-middle`): added 2026-06-11 solely because the then-latest fixed versions had been published within the previous 72 hours. Safe to relax once newer versions have aged past the cooldown window.
-- **Security pins from advisories** (`hono` 4.12.26, `undici` 7.28.0): bumped 2026-06-25 to clear two high-severity advisories that landed against the previously-pinned tree (`hono <=4.12.24`, `undici 7.0.0-7.27.2`). `undici` is transitive via the `jsdom` dev dependency only. Both patched versions were already past the 7-day cooldown. Do not drop these below the patched versions.
+- **Security pins from advisories** (`protobufjs` 7.6.5, `hono` 4.12.34, `ip-address` 10.3.1): each fixes open advisories while holding resolution below a newer release that was still inside the 7-day supply-chain cooldown on pin date. Do not drop below the pinned versions.
+- **Supply-chain cooldown pin** (`import-in-the-middle` 3.3.3): no advisory — pinned only because the consumer's `^3.0.0` caret would otherwise resolve a days-old release.
+- **Review every pin on every security pass.** Dependabot never touches `overrides`, so exact pins rot silently: the June 2026 pins (undici 7.28.0, shell-quote 1.8.4, protobufjs 7.6.2, hono 4.12.26) each accumulated new advisories against their exact pinned versions, which turned CI's `npm audit --audit-level=high` gate red and wedged every Dependabot PR by September. Prefer dropping a pin (when the dependent's own range resolves a fixed version) over bumping it; all four current pins can be relaxed once newer fixed versions age past the cooldown window.
 
 ### Mode Transitions
 
