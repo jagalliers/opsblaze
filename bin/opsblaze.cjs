@@ -668,8 +668,9 @@ function splunkVizInstalled() {
 
 function stripSplunkPeerDeps() {
   const pkgPath = path.join(ROOT, "package.json");
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-  const removed = { peer: {}, meta: {} };
+  const originalText = fs.readFileSync(pkgPath, "utf-8");
+  const pkg = JSON.parse(originalText);
+  const removed = { peer: {}, meta: {}, originalText };
   for (const name of SPLUNK_PKGS) {
     if (pkg.peerDependencies && pkg.peerDependencies[name]) {
       removed.peer[name] = pkg.peerDependencies[name];
@@ -698,17 +699,11 @@ function stripSplunkPeerDeps() {
 
 function restoreSplunkPeerDeps(removed) {
   const pkgPath = path.join(ROOT, "package.json");
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-  if (Object.keys(removed.peer).length) {
-    pkg.peerDependencies = { ...pkg.peerDependencies, ...removed.peer };
-  }
-  if (Object.keys(removed.meta).length) {
-    pkg.peerDependenciesMeta = {
-      ...pkg.peerDependenciesMeta,
-      ...removed.meta,
-    };
-  }
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+  // Restore the exact original bytes (same pattern as bin/postinstall.cjs and
+  // bin/setup.cjs). Re-adding the deleted keys to a re-parsed object instead
+  // moves them to the end, leaving a dirty (reordered) package.json after
+  // every install-splunk-viz run.
+  fs.writeFileSync(pkgPath, removed.originalText);
 }
 
 async function installSplunkViz() {
