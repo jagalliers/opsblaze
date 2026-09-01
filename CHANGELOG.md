@@ -36,7 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default max turns per investigation raised from 30 to 120, and the default stream timeout from 5 to 15 minutes so longer investigations aren't cut off by the wall clock first. (A turn is one model response plus its tool results, not one tool call.)
 - New `xhigh` thinking-effort level (introduced with Opus 4.7) is now accepted via `CLAUDE_EFFORT` and selectable in Settings. The default remains `high`.
 - The model field in Settings now suggests current model IDs (including `claude-fable-5`) while still accepting any ID as free text.
-- CI matrix extended to Node 26 (now 20/22/24/26); `actions/checkout` and `actions/setup-node` updated to v6.
+- CI matrix extended to Node 26 (now 20/22/24/26); `actions/checkout` and `actions/setup-node` updated to v6, later to v7.
+- TypeScript upgraded 5.9 -> 6.0.3 (the final classic-compiler line before the TS 7 Go rewrite; gated on a clean typecheck, full test suite, and server emit build).
+- Dependabot now ignores semver-major updates for `styled-components`, `react`, `react-dom`, and their type packages: the optional `@splunk/*` visualization packages peer-require `styled-components ^5.3.10` and `react ^18.3.1`, and Dependabot cannot see that constraint because they are deliberately kept out of the lockfile — its major-bump PRs for these packages would break Splunk viz rendering.
 - Routine dependency refresh via grouped Dependabot updates (Claude Agent SDK 0.3.x, dotenv, js-yaml, tsx, zod, autoprefixer, prettier, OpenTelemetry semantic-conventions).
 
 ## [0.1.0] - 2026-03-04

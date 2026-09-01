@@ -23,6 +23,23 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # The optional @splunk/* visualization packages (installed locally via
+    # install-splunk-viz, deliberately absent from the lockfile so Dependabot
+    # cannot see the constraint) peer-require styled-components ^5.3.10 and
+    # react/react-dom ^18.3.1. Major bumps of these would break Splunk viz
+    # rendering — do not propose them until @splunk/visualizations supports
+    # the newer majors.
+    ignore:
+      - dependency-name: "styled-components"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
