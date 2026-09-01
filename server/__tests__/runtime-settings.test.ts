@@ -73,7 +73,7 @@ describe("getClaudeModel", () => {
   });
 
   it("falls back to default when no env or runtime setting", async () => {
-    expect(await mod.getClaudeModel()).toBe("claude-opus-4-8");
+    expect(await mod.getClaudeModel()).toBe("claude-opus-5");
   });
 
   it("prefers runtime setting over env var", async () => {

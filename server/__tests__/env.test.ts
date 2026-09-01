@@ -20,7 +20,7 @@ describe("validateEnv", () => {
       expect(result.env.SPLUNK_HOST).toBe("splunk.example.com");
       expect(result.env.SPLUNK_PORT).toBe(8089);
       expect(result.env.PORT).toBe(3000);
-      expect(result.env.CLAUDE_MODEL).toBe("claude-opus-4-8");
+      expect(result.env.CLAUDE_MODEL).toBe("claude-opus-5");
     }
   });
 

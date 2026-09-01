@@ -334,16 +334,18 @@ function GeneralTab() {
             <input
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              placeholder="claude-opus-4-8"
+              placeholder="claude-opus-5"
               list="claude-model-suggestions"
               className={monoInputClass}
             />
             <datalist id="claude-model-suggestions">
-              <option value="claude-opus-4-8" />
+              <option value="claude-opus-5" />
               <option value="claude-fable-5" />
+              <option value="claude-sonnet-5" />
+              <option value="claude-haiku-4-5" />
+              <option value="claude-opus-4-8" />
               <option value="claude-opus-4-7" />
               <option value="claude-sonnet-4-6" />
-              <option value="claude-haiku-4-5" />
             </datalist>
           </div>
           <div>

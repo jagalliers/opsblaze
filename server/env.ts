@@ -22,7 +22,7 @@ const envSchema = z.object({
     .transform((v) => v === "true"),
 
   ANTHROPIC_API_KEY: z.string().optional(),
-  CLAUDE_MODEL: z.string().default("claude-opus-4-8"),
+  CLAUDE_MODEL: z.string().default("claude-opus-5"),
   CLAUDE_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).default("high"),
 
   PORT: positiveInt.max(65535).default(3000),

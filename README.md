@@ -92,7 +92,7 @@ All configuration lives in `.env` (created by the setup wizard). Key variables:
 | `HOST` | `127.0.0.1` | Bind address (use `0.0.0.0` for LAN access) |
 | `OPSBLAZE_RATE_LIMIT` | `10` | Max chat requests per minute per IP |
 | `OPSBLAZE_STREAM_TIMEOUT_MS` | `900000` | Max streaming duration (15 minutes) |
-| `CLAUDE_MODEL` | `claude-opus-4-8` | Claude model to use |
+| `CLAUDE_MODEL` | `claude-opus-5` | Claude model to use |
 | `CLAUDE_EFFORT` | `high` | Thinking effort: `low`, `medium`, `high`, `xhigh`, or `max` |
 | `LOG_LEVEL` | `info` | Log verbosity: `fatal`, `error`, `warn`, `info`, `debug`, or `trace` |
 

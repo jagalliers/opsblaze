@@ -55,7 +55,7 @@ export async function updateRuntimeSettings(
 
 export async function getClaudeModel(): Promise<string> {
   const settings = await loadRuntimeSettings();
-  return settings.claudeModel || process.env.CLAUDE_MODEL || "claude-opus-4-8";
+  return settings.claudeModel || process.env.CLAUDE_MODEL || "claude-opus-5";
 }
 
 export type ClaudeEffort = "low" | "medium" | "high" | "xhigh" | "max";
