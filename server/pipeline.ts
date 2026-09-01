@@ -252,8 +252,7 @@ export async function processMessageStream(
 
         const rawUsage = message.usage as Record<string, number> | undefined;
         const rawModelUsage = message.modelUsage as
-          | Record<string, Record<string, unknown>>
-          | undefined;
+          Record<string, Record<string, unknown>> | undefined;
         const totalCost = (message.total_cost_usd as number) ?? 0;
 
         usage = {
